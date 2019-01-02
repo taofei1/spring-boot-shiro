@@ -1,0 +1,61 @@
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.neo.mapper.OperLogMapper">
+    <resultMap id="operLogResultMap" type="OperLog">
+        <id     property="operId"         column="oper_id"       />
+        <result property="title"          column="title"         />
+        <result property="operType"       column="oper_type"   />
+        <result property="method"         column="method"        />
+        <result property="operatorType"   column="operator_type" />
+        <result property="operName"       column="oper_name"     />
+        <result property="deptName"       column="dept_name"     />
+        <result property="operUrl"        column="oper_url"      />
+        <result property="operIp"         column="oper_ip"       />
+        <result property="operLocation"   column="oper_location" />
+        <result property="operParam"      column="oper_param"    />
+        <result property="status"         column="status"        />
+        <result property="errorMsg"       column="error_msg"     />
+        <result property="operTime"       column="oper_time"     />
+    </resultMap>
+    <insert id="insertOperlog" parameterType="OperLog">
+        insert into oper_log(title, oper_type, method, operator_type, oper_name, dept_name, oper_url, oper_ip, oper_location, oper_param, status, error_msg, oper_time)
+        values (#{title}, #{operType}, #{method}, #{operatorType}, #{operName}, #{deptName}, #{operUrl}, #{operIp}, #{operLocation}, #{operParam}, #{status}, #{errorMsg}, sysdate())
+    </insert>
+    <delete id="deleteOperLogByIds" parameterType="String">
+        delete from oper_log where oper_id in
+        <foreach collection="array" item="operId" open="(" separator="," close=")">
+            #{operId}
+        </foreach>
+    </delete>
+    <delete id="deleteOne" parameterType="Long">
+        delete from oper_log where oper_id=#{operId}
+    </delete>
+    <select id="selectOperLogById" parameterType="Long" resultMap="operLogResultMap">
+        select * from oper_log
+        where oper_id = #{operId}
+    </select>
+    <select id="selectOperLogList" parameterType="OperLog" resultMap="operLogResultMap">
+        select * from oper_log
+        <where>
+            <if test="title != null and title != ''">
+                AND title like concat('%', #{title}, '%')
+            </if>
+            <if test="operType != null">
+                AND oper_type = #{operType}
+            </if>
+            <if test="operName != null and operName != ''">
+                AND oper_name like concat('%', #{operName}, '%')
+            </if>
+            <if test="params.beginTime != null and params.beginTime != ''"><!-- 开始时间检索 -->
+                and date_format(oper_time,'%y%m%d') &gt;= date_format(#{params.beginTime},'%y%m%d')
+            </if>
+            <if test="params.endTime != null and params.endTime != ''"><!-- 结束时间检索 -->
+                and date_format(oper_time,'%y%m%d') &lt;= date_format(#{params.endTime},'%y%m%d')
+            </if>
+        </where>
+    </select>
+    <update id="cleanOperLog">
+        truncate table oper_log
+    </update>
+</mapper>

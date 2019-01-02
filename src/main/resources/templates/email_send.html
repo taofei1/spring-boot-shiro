@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.w3.org/1999/xhtml">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <link href="https://cdn.bootcss.com/bootstrap/3.3.7/css/bootstrap.min.css" rel="stylesheet">
+    <link th:href="@{s/css/mail.css}">
+    <link th:href="@{s/css/box.css}">
+    <script th:src="@{/js/jquery-1.9.1.min.js}"></script>
+    <script th:src="@{/bootstrap/bootstrap.js}"></script>
+
+    <script th:src="@{/layui/layer.js}"></script>
+</head>
+<body style="background-color:#EBF6F1">
+<div style="float: left;width: 25%">
+<div class="row" style="padding-top: 10px;margin-left: 10px">
+    <div class="col-md-2">
+        <h1 style="font-size: 24px; margin: 0;" class="">邮件管理</h1>
+    </div>
+</div>
+<div class="row" style="padding-top: 15px;margin-left: 10px">
+    <div class="col-md-3">
+        <a class="btn btn-primary write"
+           style="width: 100%; margin-bottom: 20px;"> <span
+                class="glyphicon glyphicon-pencil"></span> 写信
+        </a>
+    </div>
+</div>
+<div class="row" style="padding-top: 15px;margin-left: 10px">
+    <div class="col-md-3">
+        <a class="btn btn-primary write"
+           style="width: 100%; margin-bottom: 20px;"> <span
+                class="glyphicon glyphicon-envelope le"></span> 发件箱
+        </a>
+    </div>
+</div>
+<div class="row" style="padding-top: 15px;margin-left: 10px">
+    <div class="col-md-3">
+        <a class="btn btn-primary write"
+           style="width: 100%; margin-bottom: 20px;"> <span
+                class="glyphicon glyphicon-list-alt le"></span> 草稿箱
+        </a>
+    </div>
+</div>
+</div>
+<div id="qwe" style="float: right;width:70%">
+
+</div>
+</body>
+<script>
+    $("#qwe").load("/writeMail");
+</script>
+</html>

@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <link rel="stylesheet" th:href="@{/layui-v2.4.5/layui/css/layui.css}" media="all">
+    <script type="text/javascript" src="https://code.jquery.com/jquery-3.3.1.js"></script>
+</head>
+<body>
+<form class="layui-form layui-form-pane" action="" style="width:800px;margin-left: 50px">
+    <div class="layui-form-item">
+<table id="tableInfoForm" lay-filter="test">
+
+</table>
+    </div>
+</table>
+<div class="layui-form-item layui-form-text" >
+    <label class="layui-form-label">建表语句</label>
+    <div class="layui-input-block">
+        <textarea id="sql" class="layui-textarea" ></textarea>
+    </div>
+</div>
+</form>
+</body>
+<script th:src="@{/layui-v2.4.5/layui/layui.js}"></script>
+<script th:inline="javascript">
+    var tableName=[[${tableName}]];
+    layui.use(['table','layer'], function(){
+        var table = layui.table;
+        //第一个实例
+        table.render({
+            //even:true,
+            skin:'line',
+            title:'列信息',
+            elem: '#tableInfoForm'
+            ,defaultToolbar: ['filter', 'print', 'exports']
+            ,toolbar: '#toolbar'
+            ,title:'列信息'
+            ,autoSort:false
+            ,request: {
+                pageName: 'pageNum' //页码的参数名称，默认：page
+                ,limitName: 'pageSize' //每页数据量的参数名，默认：limit
+            }
+            ,url: '/tool/tableInfo/'+tableName //数据接口
+            ,parseData: function(res){ //res 即为原始返回的数据
+                console.log(res);
+                $("#sql").text(res.data.createTable.createTable)
+                var result={
+                    "code": res.code, //解析接口状态
+                    "count": res.data.length, //解析数据长度
+                    "data": res.data.columns //解析数据列表
+                };
+                if(res.code!='00'){
+                    msg=res.data|res.message;
+                    result['msg']=msg;
+                }
+                return result;
+            }
+            ,page: false //开启分页
+            ,cols: [[ //表头
+                {field: 'columnName', title: '列名'}
+                ,{field: 'dataType', title: '类型'}
+                ,{field: 'maxLen', title: '长度'}
+                ,{field: 'columnComment', title: '描述'}
+                ,{field: 'attrType', title: 'java类型'}
+                ,{field: 'attrname', title: 'java字段'}
+                ,{field: 'isNullable', align:'center',title: '是否可为空',templet: function(d){
+                    if(d.isNullable=="YES"){
+                        return ' <input type="checkbox" name="" checked="checked" lay-skin="primary" disabled>';
+                    }else{
+                        return '<input type="checkbox" name="" lay-skin="primary" disabled>';
+                    }
+                }}
+                , {
+                    field: 'isPrimaryKey', align:'center', title: '是否主键', templet: function (d) {
+                        if (d.isPrimaryKey == "YES") {
+                            return ' <input type="checkbox" name="" checked="checked" lay-skin="primary" disabled>';
+                        } else {
+                            return '<input type="checkbox" name=""  lay-skin="primary" disabled>';
+                        }
+                    }
+                }
+            ]]
+        });
+
+
+
+    });
+</script>
+</html>

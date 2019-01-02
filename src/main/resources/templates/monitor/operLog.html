@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.w3.org/1999/xhtml">
+<head>
+    <meta charset="UTF-8">
+    <title>操作日志表</title>
+    <link rel="stylesheet" th:href="@{/layui-v2.4.5/layui/css/layui.css}" media="all">
+    <link th:href="@{/bootstrap/bootstrap.css}" rel="stylesheet">
+    <script type="text/javascript" src="https://code.jquery.com/jquery-3.3.1.js"></script>
+    <script type="text/javascript" th:src="@{/bootstrap/bootstrap.js}"></script>
+</head>
+<body>
+<div class="layui-form-item" id="searchForm">
+    <div class="layui-inline">
+        <label class="layui-form-label">模块</label>
+        <div class="layui-input-inline" style="width: 100px;">
+            <input type="text" name="title" autocomplete="off" class="layui-input">
+        </div>
+    </div>
+    <div class="layui-inline">
+        <label class="layui-form-label">类型</label>
+        <div class="layui-input-inline" style="width: 100px;">
+            <input type="text" name="operType" autocomplete="off" class="layui-input">
+        </div>
+    </div>
+    <div class="layui-inline">
+        <label class="layui-form-label">人员</label>
+        <div class="layui-input-inline" style="width: 100px;">
+            <input type="text" name="operName" autocomplete="off" class="layui-input">
+        </div>
+    </div>
+    <div class="layui-inline">
+        <label class="layui-form-label">时间</label>
+        <div class="layui-input-inline" style="width: 150px;">
+            <input type="text" id="beginTime" name="beginTime" autocomplete="off" readonly class="layui-input date">
+        </div>
+        <div class="layui-form-mid">-</div>
+        <div class="layui-input-inline" style="width: 150px;">
+            <input type="text" id="endTime" name="endTime" autocomplete="off" readonly class="layui-input date">
+        </div>
+    </div>
+    <div class="layui-inline">
+       <button class="layui-btn" id="search">搜索</button>
+        <button class="layui-btn layui-btn-warm" id="clean">重置</button>
+    </div>
+
+
+
+</div>
+<table id="operLog" lay-filter="test"  ></table>
+
+</body>
+<script th:src="@{/layui-v2.4.5/layui/layui.js}"></script>
+<script th:src="@{/js/util.js}"></script>
+<script>
+    layui.use(['table','layer','laydate'], function(){
+        var table = layui.table;
+        var laydate=layui.laydate;
+        $('.date').each(function () {
+            laydate.render({
+                elem: this //指定元素
+                ,type: 'datetime'
+            });
+        })
+
+        //第一个实例
+        var tableIns = table.render({
+            elem: '#operLog'
+            ,defaultToolbar: ['filter', 'print', 'exports']
+            ,toolbar: '#toolbar'
+            ,title:'数据表信息'
+            ,autoSort:false
+            ,page: true
+            ,request: {
+                pageName: 'pageNum' //页码的参数名称，默认：page
+                ,limitName: 'pageSize' //每页数据量的参数名，默认：limit
+            }
+            ,url: '/monitor/operLog/list' //数据接口
+            ,parseData: function(res){ //res 即为原始返回的数据
+                var result={
+                    "code": res.code, //解析接口状态
+                    "count": res.data.total, //解析数据长度
+                    "data": res.data.list //解析数据列表
+                };
+                if(res.code!='00'){
+                    msg=res.data||res.message;
+                    result['msg']=msg;
+                }
+                return result;
+            }
+            //开启分页
+            ,cols: [[ //表头
+                {type: 'checkbox',fixed: 'left'},
+                {field: 'operId', title: '编号',sort: true,width:70},
+                {field: 'title', title: '系统模块', sort: true}
+                ,{field: 'operType', title: '操作类型',width:100,align:'center',sort: true,templet: function(d){
+                    switch(d.operType){
+                        case 0:
+                            return ' <a class="layui-btn layui-btn-radius layui-btn-normal layui-btn-xs" >其它</a>';
+                        case 1:
+                            return ' <a class="layui-btn layui-btn-radius layui-btn-normal layui-btn-xs" >新增</a>';
+                        case 2:
+                            return ' <a class="layui-btn layui-btn-radius layui-btn-warm layui-btn-xs" >修改</a>';
+                        case 3:
+                            return ' <a class="layui-btn layui-btn-radius layui-btn-danger layui-btn-xs" >删除</a>';
+                        case 4:
+                            return ' <a class="layui-btn layui-btn-radius layui-btn-warm layui-btn-xs" >授权</a>';
+                        case 5:
+                            return ' <a class="layui-btn layui-btn-radius layui-btn-xs" >导出</a>';
+                        case 6:
+                            return ' <a class="layui-btn layui-btn-radius  layui-btn-xs" >导入</a>';
+                        case 7:
+                            return ' <a class="layui-btn layui-btn-radius layui-btn-normal layui-btn-xs" >生成代码</a>';
+                        case 8:
+                            return ' <a class="layui-btn layui-btn-radius layui-btn-danger layui-btn-xs" >清空</a>';
+                        default:
+                            return ' <a class="layui-btn layui-btn-radius layui-btn-normal layui-btn-xs" >其它</a>';;
+                    }
+
+                }}
+                ,{field: 'operName', title: '操作人员',sort: true}
+                ,{field: 'deptName', title: '部门', width:200,sort:true}
+                ,{field: 'operIp', title: '主机域名', sort:true}
+                ,{field: 'operLocation', title: '操作地点', sort:true}
+                ,{field: 'status', title: '状态', align:'center',width:100,sort:true,templet: function(d){
+                    if(d.status==0){
+                        return ' <a class="layui-btn layui-btn-radius layui-btn-normal layui-btn-xs" ><i class="layui-icon layui-icon-ok"></i>成功</a>';
+                    }else{
+                        return '<a class="layui-btn layui-btn-radius layui-btn-danger layui-btn-xs" ><i class="layui-icon layui-icon-close"></i>失败</a>';
+                    }
+                }}
+                ,{field: 'operTime', title: '操作时间', sort:true,width:170}
+                ,{fixed: 'right', title:'操作',align:'center', width:80,toolbar: '#barDemo'}
+            ]]
+        });
+        //监听行工具事件
+        table.on('tool(test)', function(obj){ //注：tool 是工具条事件名，test 是 table 原始容器的属性 lay-filter="对应的值"
+
+            var data = obj.data //获得当前行数据
+                ,layEvent = obj.event; //获得 lay-event 对应的值
+
+            if(layEvent === 'detail'){
+                layer.open({
+                    type:2,
+                    title: '日志详情'
+                    ,content: '/monitor/operLog/'+data.operId,
+                    name:'form_view',
+                    area: ['900px', '550px'],
+                    maxmin: true,
+                    btn:[]
+                });
+            }
+        });
+        table.on('toolbar(test)', function(obj){ //注：tool 是工具条事件名，test 是 table 原始容器的属性 lay-filter="对应的值"
+            var data = obj.data //获得当前行数据
+                ,layEvent = obj.event; //获得 lay-event 对应的值
+            if(layEvent === 'delete'){
+                var checkStatus = table.checkStatus('operLog')
+                    ,data = checkStatus.data;
+                if(data.length<1){
+                    layer.msg("请先选中数据！");
+                }else{
+                    var s="";
+                    for(var p in data){
+                        console.log(data[p].operId);
+                        if(p!=data.length-1) {
+                            s += data[p].operId + ',';
+                        }else{
+                            s += data[p].operId;
+                        }
+                    }
+                    var param={'ids':s};
+                    layer.confirm('真的删除么', function(){
+                        $.post("/monitor/operLog/delete",param,function (res) {
+                            console.log(res.code);
+                            if(res.code=='00'){
+                                layer.msg("删除成功",{icon: 6, time: 1000});
+                                tableIns.reload();
+                            }else{
+                                layer.msg("删除失败:"+res.data,{icon:5});
+                            }
+                        })
+                    });
+
+                }
+            }else if(layEvent==='refresh'){
+
+                tableIns.reload( {
+                    page:{
+                        curr:1,
+                        limit:10
+                    }
+                });
+            }else if(layEvent==='clean'){
+                layer.confirm('确定清空么', function(){
+                    $.post("/monitor/operLog/clean",param,function (res) {
+                        if(res.code=='00'){
+                            layer.msg("清空成功",{icon: 6, time: 1000});
+                            tableIns.reload();
+                        }else{
+                            layer.msg("清空失败:"+res.data,{icon:5});
+                        }
+                    })
+                });
+            }
+        });
+        //监听排序事件
+        table.on('sort(test)', function(obj) { //注：tool是工具条事件名，test是table原始容器的属性 lay-filter="对应的值"
+            console.log(obj.field); //当前排序的字段名
+            console.log(obj.type); //当前排序类型：desc（降序）、asc（升序）、null（空对象，默认排序）
+            console.log(this); //当前排序的 th 对象
+            var params={};
+            params['sort']=obj.field;
+            params['order']=obj.type;
+            //尽管我们的 table 自带排序功能，但并没有请求服务端。
+            //有些时候，你可能需要根据当前排序的字段，重新向服务端发送请求，从而实现服务端排序，如：
+            tableIns.reload({
+                initSort: obj ,
+                where: { //请求参数（注意：这里面的参数可任意定义，并非下面固定的格式）
+                    params:params
+                }
+            });
+        });
+        $('#search').click(function () {
+            var params={'beginTime':$("[name='beginTime']").val(),'endTime':$("[name='endTime']").val()};
+            tableIns.reload({
+
+                page:{
+                    curr:1
+                },
+                where: { //请求参数（注意：这里面的参数可任意定义，并非下面固定的格式）
+                    title:$("[name='title']").val(),
+                    operType:$("[name='operType']").val(),
+                    operName:$("[name='operName']").val(),
+                    params:params
+                }
+            })
+        })
+        $('#clean').click(function () {
+            $("#searchForm input").val("");
+        })
+
+    });
+</script>
+<script type="text/html" id="toolbar">
+    <a class="layui-btn layui-btn-warm  layui-btn-sm" lay-event="delete"><i class="layui-icon layui-icon-close"></i>删除</a>
+    <a class="layui-btn layui-btn-danger  layui-btn-sm" lay-event="clean"><i class="layui-icon layui-icon-delete"></i>清空</a>
+    <a class="layui-btn layui-btn-normal  layui-btn-sm" lay-event="refresh"><i class="layui-icon layui-icon-refresh"></i>刷新</a>
+</script>
+<script type="text/html" id="barDemo">
+    <a class="layui-btn layui-btn  layui-btn-xs" lay-event="detail"><i class="layui-icon layui-icon-search"></i>详细</a>
+</script>
+</html>

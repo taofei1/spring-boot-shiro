@@ -1,0 +1,323 @@
+<!DOCTYPE HTML>
+<html xmlns:th="http://www.w3.org/1999/xhtml">
+<head>
+<meta charset="utf-8">
+<meta name="renderer" content="webkit|ie-comp|ie-stand">
+<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+<meta name="viewport" content="width=device-width,initial-scale=1,minimum-scale=1.0,maximum-scale=1.0,user-scalable=no" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+ <link href="http://libs.baidu.com/bootstrap/3.0.3/css/bootstrap.min.css" rel="stylesheet">
+<link rel="stylesheet" type="text/css" th:href="@{/h-ui/H-ui.min.css}" />
+<link rel="stylesheet" type="text/css" th:href="@{/h-ui/H-ui.admin.css}" />
+<link rel="stylesheet" type="text/css" th:href="@{/h-ui/iconfont.css}"/>
+<link rel="stylesheet" type="text/css" th:href="@{/h-ui/skin.css}" id="skin" />
+<link rel="stylesheet" type="text/css" th:href="@{/h-ui/style.css}" />
+<link rel="stylesheet" type="text/css" th:href="@{/select/bootstrap-select.css}" />
+
+<title></title>
+</head>
+<body>
+<article class="page-container">
+	<form class="form form-horizontal" id="form-admin-add" action="/add">
+	<div class="row cl">
+		<label class="form-label col-xs-4 col-sm-3"><span class="c-red">*</span>用户名：</label>
+		<div class="formControls col-xs-8 col-sm-9">
+			<input type="text" class="input-text" value="" placeholder="4~16位数字、字母、下划线" id="username" name="username">
+		</div>
+	</div>
+	<div class="row cl">
+		<label class="form-label col-xs-4 col-sm-3"><span class="c-red">*</span>姓名：</label>
+		<div class="formControls col-xs-8 col-sm-9">
+			<input type="text" class="input-text" autocomplete="off" value="" placeholder="仅支持中文或者英文" id="name" name="name">
+		</div>
+	</div>
+	<div class="row cl">
+		<label class="form-label col-xs-4 col-sm-3">性别：</label>
+		<div class="formControls col-xs-8 col-sm-9 skin-minimal">
+			<div class="radio-box">
+				<input name="gender" type="radio" value="m" id="sex-1" checked>
+				<label for="sex-1">男</label>
+			</div>
+			<div class="radio-box">
+				<input type="radio" id="sex-2" value="f" name="gender">
+				<label for="sex-2">女</label>
+			</div>
+		</div>
+	</div>
+		<div class="row cl">
+		<label class="form-label col-xs-4 col-sm-3">生日：</label>
+		<div class="formControls col-xs-8 col-sm-9">
+			<input type="text" class="input-text" autocomplete="off"  placeholder="yyyy-MM-dd" id="birthday" name="birthday">
+		</div>
+	</div>
+	<div class="row cl">
+		<label class="form-label col-xs-4 col-sm-3">手机：</label>
+		<div class="formControls col-xs-8 col-sm-9">
+			<input type="text" class="input-text"  placeholder="输入手机号" id="mobile" name="mobile">
+		</div>
+	</div>
+	<div class="row cl">
+		<label class="form-label col-xs-4 col-sm-3"><span class="c-red">*</span>邮箱：</label>
+		<div class="formControls col-xs-8 col-sm-9">
+			<input type="text" class="input-text" placeholder="输入邮箱" name="email" id="email">
+		</div>
+	</div>
+	<div class="row cl">
+		<label class="form-label col-xs-4 col-sm-3">部门：</label>
+		<div class="formControls col-xs-8 col-sm-9" id="depts">
+			    <select  data-width="fit" title="未选择部门" data-style="btn-info" data-actions-box="true" id="select_depts" class="selectpicker bla bla bli" multiple data-live-search="true">
+					
+				</select>
+		</div>
+	</div>
+	<div class="row cl">
+		<label class="form-label col-xs-4 col-sm-3">角色：</label>
+		<div class="formControls col-xs-8 col-sm-9" id="roles">
+			    <select  data-width="fit" title="未选择角色" data-style="btn-info" data-actions-box="true" id="select_roles" class="selectpicker bla bla bli" multiple data-live-search="true">
+                </select>
+		</div>
+	</div>
+	<div class="row cl">
+		<div class="col-xs-8 col-sm-9 col-xs-offset-4 col-sm-offset-3">
+			<input class="btn1 btn1-primary radius" type="submit" value="&nbsp;&nbsp;提交&nbsp;&nbsp;">
+		</div>
+	</div>
+	</form>
+</article>
+
+<!--_footer 作为公共模版分离出去--> 
+<script type="text/javascript" th:src="@{/js/jquery-1.9.1.min.js}"></script>
+<script type="text/javascript" th:src="@{/layui/layer.js}"></script>
+<script type="text/javascript" th:src="@{/h-ui/H-ui.min.js}"></script>
+<script type="text/javascript" th:src="@{/h-ui/H-ui.admin.js}"></script> <!--/_footer 作为公共模版分离出去-->
+<script type="text/javascript" th:src="@{/select/bootstrap-select.js}"></script>
+<script type="text/javascript" th:src="@{/laydate/laydate.js}"></script>
+<!--请在下方写此页面业务相关的脚本-->
+<script type="text/javascript" th:src="@{/jquery-validation/jquery.validate.js}"></script>
+<script type="text/javascript" th:src="@{/jquery-validation/validate-methods.js}"></script>
+<script type="text/javascript" th:src="@{/jquery-validation/messages_zh.js}"></script>
+<script type="text/javascript">
+$(function(){
+    var isEdit=false;
+    $.ajax({
+        url :"/dept/enable",
+        dataType:"json",
+		async:false,
+        success:function(result){
+            var data=result.data;
+            for(var i=0;i<data.length;i++) {
+                $("#select_depts").append("<option lay-ignore value="+data[i].id+" >"+data[i].name+"</option>")
+            }
+        }
+    });
+
+    $.ajax({
+        url :"/role/enable",
+        dataType:"json",
+		async:false,
+        success:function(result){
+            var data=result.data;
+            for(var i=0;i<data.length;i++) {
+                $("#select_roles").append("<option lay-ignore value="+data[i].id+" >"+data[i].role+"</option>")
+            }
+
+        }
+    });
+	$('.selectpicker').selectpicker('render');
+	laydate.render({
+            elem: '#birthday' ,
+            max:0
+        });
+	var url=window.location.href;
+    var username;
+    var email;
+    var state;
+     if(url.indexOf("?")!=-1){
+         isEdit=true;
+         var para=url.substring(url.indexOf("?"));
+         var uid=para.substring(5);
+         $.getJSON("/getOne"+para,function (data) {
+
+            if(data.code=="00"){
+                var userinfo=data.data;
+                $("#username").val(userinfo.username);
+                username=userinfo.username;
+                email=userinfo.email;
+                state=userinfo.state;
+                $("#name").val(userinfo.name);
+                $("#email").val(userinfo.email);
+                $("#birthday").val(userinfo.birthday);
+                $("#mobile").val(userinfo.mobile);
+                if(userinfo.gender=="f"){
+                    $('#sex-1').removeAttr("checked");
+                    $('#sex-1').parent().removeClass("checked");
+                    $('#sex-2').parent().addClass("checked");
+				}
+                console.log(userinfo);
+                var deptList=userinfo.deptList;
+                var roleList=userinfo.roleList;
+                var dept_id=[];
+                var role_id=[];
+                if(deptList.length>0){
+                    for(var i=0;i<deptList.length;i++){
+                        dept_id.push(deptList[i].id)
+                    }
+                    $('#select_depts').selectpicker('val',dept_id);
+                    $("#select_depts").selectpicker('refresh');
+                }
+                if(roleList.length>0){
+                    for(var i=0;i<roleList.length;i++){
+                        role_id.push(roleList[i].id);
+                    }
+                    $('#select_roles').selectpicker('val',role_id);
+                    $("#select_roles").selectpicker('refresh');
+                }
+
+            }else{
+                layer.msg(data.data,{icon:5,time:1000});
+            }
+         })
+     }	
+	$('.skin-minimal input').iCheck({
+		checkboxClass: 'icheckbox-blue',
+		radioClass: 'iradio-blue',
+		increaseArea: '20%'
+	});
+	
+	$("#form-admin-add").validate({
+		rules:{
+			username:{
+				required:true,
+				validateUsername:true,
+				remote:{
+					url:"/getByUsername",
+					type:"get",
+					dataFilter:function(data){
+                        var obj = JSON.parse(data);
+					    console.log(data);
+					    if (obj.code == "01") {
+                         layer.msg(obj.data, {icon: 5});
+						 return false;
+                     }else if(obj.data!=null){
+					 if(isEdit==true&&$("#username").val()==username){
+						return true;
+					 }else{
+						return false;
+						}
+					 }else{
+						return true;
+					 }
+					}
+				}
+			},
+			name:{
+				required:true,
+				validateName:true
+			},
+			mobile:{
+				isTel:true
+			},
+			email:{
+				required:true,
+				email:true,
+				remote:{
+					url:"/getByEmail",
+					type:"get",
+					dataFilter:function(data){
+                        var obj = JSON.parse(data);
+                        console.log(obj);
+						 if (obj.code == "01") {
+                         layer.msg(obj.data, {icon: 5});
+						 return false;
+                     }else if(obj.data!=null){
+					 if(isEdit==true&&$("#email").val()==email){
+						return true;
+					 }else{
+						return false;
+						}
+					 }else{
+						return true;
+					 }
+					}
+				}
+			}
+		},
+		messages:{
+			username:{
+			    remote:"用户名已存在"
+			},
+			email:{
+			    remote:"邮箱已被注册"
+			}
+		},
+		onkeyup:false,
+		//focusCleanup:true,
+		success:"valid",
+		submitHandler:function(form){
+            var dept_ids = getSelectValueToArray("select_depts");
+            var role_ids = getSelectValueToArray("select_roles");
+            var url=form.action;
+            var post = $(form).serializeObject();
+            post['dept_ids'] = dept_ids;
+            post['role_ids'] = role_ids;
+            if (isEdit == true) {
+                post['uid'] = uid;
+                post['state']=state;
+            }
+			console.log(post);
+            $.ajax({
+                type: "post",
+                url: url,
+                // traditional: true,
+                data: post,
+                success: function (data) {
+                    if (data.code == "00") {
+                        closeSelf();
+                        window.parent.refreshCurrentPage();
+
+                    } else {
+                        layer.msg('添加失败!错误信息:'+data.data, {icon: 5});
+                    }
+                },
+                error:function () {
+                    layer.msg('添加失败!系统错误', {icon: 5});
+                }
+            });
+		}
+	});
+    $.fn.serializeObject = function() {
+        var o = {};
+        var a = this.serializeArray();
+        $.each(a, function() {
+            if (o[this.name]) {
+                if (!o[this.name].push) {
+                    o[this.name] = [ o[this.name] ];
+                }
+                o[this.name].push(this.value || '');
+            } else {
+                o[this.name] = this.value || '';
+            }
+        });
+        return o;
+    }
+    function getSelectValueToArray(id){
+        var value=[];
+        if($("#"+id).selectpicker('val')!=null){
+            value=$("#"+id).selectpicker('val');
+        }
+        return value;
+    }
+    function closeSelf(){
+        //假设这是iframe页
+        var index = parent.layer.getFrameIndex(window.name); //先得到当前iframe层的索引
+        parent.layer.close(index);
+        if(isEdit) {
+            parent.layer.msg('编辑完成！', {icon: 6});
+        }else{
+            parent.layer.msg('添加成功！密码已发送至相应的邮箱，请注意查收。', {icon: 6});
+        }
+    }
+});
+</script> 
+</body>
+</html>

@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.w3.org/1999/xhtml">
+<head>
+    <meta charset="UTF-8">
+    <title>数据表信息</title>
+    <link rel="stylesheet" th:href="@{/layui-v2.4.5/layui/css/layui.css}" media="all">
+    <script type="text/javascript" src="https://code.jquery.com/jquery-3.3.1.js"></script>
+</head>
+<body>
+<table id="tableInfo" lay-filter="test"></table>
+
+</body>
+<script th:src="@{/layui-v2.4.5/layui/layui.js}"></script>
+<script>
+    var prefix="/tool/tableInfo"
+    layui.use(['table','layer'], function(){
+        // 生成代码
+        function genCode(tableName) {
+            layer.confirm("确定要生成" + tableName + "表代码吗？", function() {
+                location.href = prefix + "/genCode/" + tableName;
+                layer.msg('执行成功,正在生成代码请稍后…', { icon: 1 });
+            })
+        }
+
+        //批量生成代码
+        function batchGenCode() {
+            var data = table.checkStatus('tableInfo').data;
+            var s="";
+            for(var p in data){
+                if(p!=data.length-1) {
+                    s += data[p].tableName + ',';
+                }else{
+                    s += data[p].tableName;
+                }
+            }
+            if (s == "") {
+                layer.msg("请选择要生成的数据");
+                return;
+            }
+            layer.confirm("确认要生成选中的" + data.length + "条数据吗?", function() {
+                location.href = prefix + "/batchGenCode?tables=" + s;
+                layer.msg('执行成功,正在生成代码请稍后…', { icon: 1 });
+            });
+        }
+        var table = layui.table;
+        //第一个实例
+        var tableIns = table.render({
+            elem: '#tableInfo'
+            ,defaultToolbar: ['filter', 'print', 'exports']
+            ,toolbar: '#toolbar'
+            ,title:'数据表信息'
+            ,autoSort:false
+            ,request: {
+                pageName: 'pageNum' //页码的参数名称，默认：page
+                ,limitName: 'pageSize' //每页数据量的参数名，默认：limit
+            }
+            ,url: '/tool/tableInfo/list' //数据接口
+            ,parseData: function(res){ //res 即为原始返回的数据
+                console.log(res);
+                var result={
+                    "code": res.code, //解析接口状态
+                    "count": res.data.total, //解析数据长度
+                    "data": res.data.list //解析数据列表
+                };
+                if(res.code!='00'){
+                    msg=res.data|res.message;
+                    result['msg']=msg;
+                }
+                return result;
+            }
+            ,page: true //开启分页
+            ,cols: [[ //表头
+                {type: 'checkbox', fixed: 'left'},
+                {field: 'tableName', title: '表名', sort: true}
+                ,{field: 'tableComment', title: '注释',sort: true}
+                ,{field: 'className', title: '对应类名'}
+                ,{field: 'createTime', title: '创建时间', sort:true}
+                ,{field: 'updateTime', title: '修改时间', sort:true}
+                ,{fixed: 'right', title:'操作',align:'center', toolbar: '#barDemo'}
+            ]]
+        });
+        //监听行工具事件
+        table.on('tool(test)', function(obj){ //注：tool 是工具条事件名，test 是 table 原始容器的属性 lay-filter="对应的值"
+
+            var data = obj.data //获得当前行数据
+                ,layEvent = obj.event; //获得 lay-event 对应的值
+
+            if(layEvent === 'detail'){
+                layer.open({
+                    type:2,
+                    title: '添加部门'
+                    ,content: '/tool/tableInfo/form?tableName='+data.tableName,
+                    name:'form_view',
+                    area: ['900px', '500px'],
+                    maxmin: true,
+                    btn:[]
+                });
+            } else if(layEvent === 'gen'){
+                genCode(data.tableName)
+            }
+        });
+        table.on('toolbar(test)', function(obj){ //注：tool 是工具条事件名，test 是 table 原始容器的属性 lay-filter="对应的值"
+            var data = obj.data //获得当前行数据
+                ,layEvent = obj.event; //获得 lay-event 对应的值
+            if(layEvent === 'batchGen'){
+                batchGenCode();
+            }else if(layEvent==='refresh'){
+
+                tableIns.reload( {
+                    page:{
+                        curr:1,
+                        limit:10
+                    }
+                });
+            }
+        });
+        //监听排序事件
+        table.on('sort(test)', function(obj) { //注：tool是工具条事件名，test是table原始容器的属性 lay-filter="对应的值"
+            console.log(obj.field); //当前排序的字段名
+            console.log(obj.type); //当前排序类型：desc（降序）、asc（升序）、null（空对象，默认排序）
+            console.log(this); //当前排序的 th 对象
+            var params={};
+            params['sort']=obj.field;
+            params['order']=obj.type;
+            //尽管我们的 table 自带排序功能，但并没有请求服务端。
+            //有些时候，你可能需要根据当前排序的字段，重新向服务端发送请求，从而实现服务端排序，如：
+            table.reload('tableInfo', {
+                initSort: obj //记录初始排序，如果不设的话，将无法标记表头的排序状态。
+                , where: { //请求参数（注意：这里面的参数可任意定义，并非下面固定的格式）
+                  params:params
+                }
+            });
+        });
+
+    });
+</script>
+<script type="text/html" id="toolbar">
+    <a class="layui-btn layui-btn-default  layui-btn-sm" lay-event="batchGen">批量代码生成</a>
+    <a class="layui-btn layui-btn-normal  layui-btn-sm" lay-event="refresh"><i class="layui-icon layui-icon-refresh"></i>刷新</a>
+</script>
+<script type="text/html" id="barDemo">
+    <a class="layui-btn layui-btn-primary  layui-btn-sm" lay-event="detail">查看</a>
+    <a class="layui-btn layui-btn-default  layui-btn-sm" lay-event="gen">代码生成</a>
+</script>
+</html>

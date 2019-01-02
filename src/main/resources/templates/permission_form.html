@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.w3.org/1999/xhtml">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <link th:href="@{/bootstrap/bootstrap.css}" rel="stylesheet">
+    <link th:href="@{/bootstrap-table/bootstrap-table.css}" rel="stylesheet">
+    <link th:href="@{/jsTree/themes/default/style.css}" rel="stylesheet">
+    <script type="text/javascript" src="https://code.jquery.com/jquery-3.3.1.js"></script>
+    <script type="text/javascript" th:src="@{/jsTree/jstree.js}"></script>
+    <script type="text/javascript" th:src="@{/layui/layer.js}"></script>
+    <script type="text/javascript" th:src="@{/js/util.js}"></script>
+    <script type="text/javascript" th:src="@{/bootstrap/bootstrap.js}"></script>
+    <script type="text/javascript" th:src="@{/bootstrap-table/bootstrap-table.js}"></script>
+    <script type="text/javascript" th:src="@{/bootstrap-table/bootstrap-table-zh-CN.js}"></script>
+</head>
+<body>
+<div class="modal-body">
+<form class="form-horizontal">
+    <div class="form-group">
+        <label for="name" class="col-sm-2 control-label">权限名称</label>
+        <div class="col-sm-10">
+            <input type="text" name="name" class="form-control" id="name" >
+        </div>
+    </div>
+    <div class="form-group">
+        <label for="permission" class="col-sm-2 control-label">权限标识</label>
+        <div class="col-sm-10">
+            <input type="text" class="form-control" id="permission"  name="permission">
+        </div>
+    </div>
+    <div class="form-group">
+        <label  class="col-sm-2 control-label">资源类型</label>
+        <label class="radio-inline">
+            <input type="radio" name="resourceType" id="inlineRadio1" value="menu" checked> 菜单
+        </label>
+        <label class="radio-inline">
+            <input type="radio" name="resourceType" id="inlineRadio2" value="button"> 按钮
+        </label>
+    </div>
+    <div class="form-group">
+        <label for="url" class="col-sm-2 control-label">url地址</label>
+        <div class="col-sm-10">
+            <input type="text" class="form-control" id="url"  name="url">
+        </div>
+    </div>
+    <div class="form-group">
+        <label for="parentId" class="col-sm-2 control-label">父菜单</label>
+        <div class="col-sm-10">
+            <input type="text" readonly class="form-control" name="parentId" id="parentId"  >
+        </div>
+        <label for="sort" class="col-sm-2 control-label">排序</label>
+        <div class="col-sm-10">
+            <input type="text" class="form-control" id="sort"  name="sort">
+        </div>
+    </div>
+</form>
+<div style="text-align: center">
+            <button type="button" class="btn btn-primary" id="submit">提交</button>
+</div>
+
+</div>
+<div style="display: none" id="menus">
+</div>
+</body>
+<script>
+    var isEdit=false;
+    var editId='';
+    var state;
+    var url=window.location.href;
+    if(url.indexOf("?")!=-1){
+        isEdit=true;
+        var para=url.substring(url.indexOf("?"));
+        var id=para.substring(4);
+        $.getJSON("/permission/"+id,function (result,status) {
+            if(status=='success'){
+                var data=result.data;
+                editId=data.id;
+                state=data.state;
+                if(result.code=='00'){
+                    $("#name").val(data.name);
+                    $("#permission").val(data.permission);
+                    if(data.resourceType=="button"){
+                        $("#inlineRadio2").prop("checked","checked");
+                    }
+                    $("#url").val(data.url);
+                    $("#sort").val(data.sort);
+                    if(data.parentId==0){
+                        $("#parentId").val("");
+                    }else{
+                        $.getJSON("/permission/"+data.parentId,function(result){
+                            $("#parentId").val(data.parentId+"["+result.data.name+"]");
+                        })
+                    }
+                }
+            }
+        })
+    }
+    $('#parentId').click(function () {
+        $.getJSON("/loadMenuTree2", function (result, status) {
+            if (status == "success") {
+                if (result.code == "00") {
+                    var content = result.data;
+                    console.log(content);
+                    $('#menus').jstree({
+                        'plugins': ["wholerow", "checkbox", "types"],
+                        'checkbox': {
+                            "three_state": false//父子级不关联选中
+                        },
+                        'core': {
+                            "multiple": false,
+                            'data': content,
+                        }
+                    });
+                    $('#menus').on('activate_node.jstree', function (obj, e) {
+                        var currentNode = e.node;
+                        console.log(currentNode);
+                        $("#parentId").val(currentNode.id+"["+currentNode.text+"]");
+                        layer.close(index);
+                        $('#menus').jstree('destroy');
+
+                    });
+                    $('#menus').on('loaded.jstree',function(event,data){
+                        console.log(subStringID( $("#parentId").val()));
+                        $("#menus").jstree("deselect_all",true);
+                        $('#menus').jstree('select_node',subStringID( $("#parentId").val()),true);
+                    })
+                    var width = $(document).width(), height = $(document).height();
+                   var index= layer.open({
+                        type: 1
+                        , title: '菜单目录'
+                        , moveType: 1
+                        , id: 'Lay_layer_debug'
+                        , content: $('#menus')
+                        , shade: false
+                        , resize: false
+                        , fixed: false
+                        , maxWidth: '100%',
+                        area: ['200px', '300px']
+                        , offset: ['0px'
+                            , width - 200 + 'px'
+                        ]
+                    });
+                }
+            }
+        })
+    });
+    function subStringID(value){
+        return value.substring(0,value.indexOf("["));
+    }
+    $('#submit').click(function () {
+        var data=$('form').serializeObject();
+        if(isEdit=true) {
+            data.id=editId;
+            data.state = state;
+        }
+        if(data.parentId==""){
+            data.parentId=0;
+    }else {
+            data.parentId = subStringID(data.parentId);
+        }
+        $.post("/permission/saveOrUpdate",data,function (result,status) {
+            if(status=='success'){
+                if(result.code=='00'){
+                    var index = parent.layer.getFrameIndex(window.name); //先得到当前iframe层的索引
+                    parent.layer.close(index);
+                    parent.refresh();
+                    parent.layer.msg("添加成功!",{icon:6,time:1000});
+
+                }
+            }
+        })
+    })
+
+</script>
+
+</html>

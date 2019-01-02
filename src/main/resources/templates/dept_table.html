@@ -1,0 +1,282 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.w3.org/1999/xhtml">
+<head>
+    <meta charset="UTF-8">
+    <title>角色表</title>
+    <link th:href="@{/bootstrap/bootstrap.css}" rel="stylesheet">
+    <link th:href="@{/bootstrap-table/bootstrap-table.css}" rel="stylesheet">
+    <link th:href="@{/jsTree/themes/default/style.css}" rel="stylesheet">
+    <script type="text/javascript" src="https://code.jquery.com/jquery-3.3.1.js"></script>
+    <script type="text/javascript" th:src="@{/jsTree/jstree.js}"></script>
+    <script type="text/javascript" th:src="@{/layui/layer.js}"></script>
+    <script type="text/javascript" th:src="@{/bootstrap/bootstrap.js}"></script>
+    <script type="text/javascript" th:src="@{/bootstrap-table/bootstrap-table.js}"></script>
+    <script type="text/javascript" th:src="@{/bootstrap-table/bootstrap-table-zh-CN.js}"></script>
+</head>
+<body>
+<div class="panel-body" style="padding-bottom:0px;">
+    <div class="panel panel-default">
+        <div class="panel-heading" style="cursor: pointer;">查询条件</div>
+        <div class="panel-body" id="searchInput"  style="display: none;">
+            <form id="formSearch" class="form-horizontal">
+                <div class="form-group" style="margin-top:15px">
+                    <div class="col-sm-1">
+                        <input type="text" class="form-control" id="txt_search_id" placeholder="ID">
+                    </div>
+                    <div class="col-sm-2">
+                        <input type="text" class="form-control" id="txt_search_name" placeholder="部门名称">
+                    </div>
+                    <div class="col-sm-2">
+                        <input type="text" class="form-control" id="txt_search_location" placeholder="部门位置">
+                    </div>
+                    <div class="col-sm-2">
+                        <input type="text" class="form-control" id="txt_search_status" placeholder="1:有效 2:无效">
+                    </div>
+                    <div class="col-sm-1" style="text-align:left;">
+                        <button type="button" style="margin-left:50px" id="btn_query" class="btn btn-primary">查询</button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div id="toolbar" class="btn-group">
+        <button id="btn_add" type="button" class="btn btn-default">
+            <span class="glyphicon glyphicon-plus" aria-hidden="true"></span>新增
+        </button>
+        <button id="btn_delete" type="button" class="btn btn-default">
+            <span class="glyphicon glyphicon-remove" aria-hidden="true"></span>删除
+        </button>
+    </div>
+
+    <table id="dept_table">
+
+    </table>
+</div>
+</body>
+<script>
+    var curPage=0;
+    var size=5;
+    var sortName;
+    var sortOrder;
+    var currentRole;
+    var searchids=[];
+    var index1;
+    // 修改按钮、删除按钮
+    function addFunctionAlty(value, row, index) {
+        return [
+            '<button type="button" id="btn_edit" class="btn btn-info" >修改</button>  ',
+            '<button id="btn_delete" class="btn btn-danger">删除</button>'
+        ].join('');
+    }
+    function setPng(value, row, index) {
+        if(value==1){
+            return ["<img class='status' src='/images/right.png' style='width: 20px;height: 20px;'>"];
+        }else{
+            return ["<img class='status' src='/images/wrong.png' style='width: 20px;height: 20px;'>"]
+        }
+    }
+    window.changStatus={
+        'click .status':function (e,value,row,index) {
+
+            if(value==1){
+                row.state=0;
+            }else{
+                row.state=1;
+            }
+            $.post("/dept/status",{
+                id:row.id,
+                status:row.state
+            },function (result,status) {
+                var index1=layer.load(2);
+                if(status=="success"){
+                    if(result.code=='00'){
+                        $('#dept_table').bootstrapTable('updateCell',{index:index,field:'state',value:row.state});
+                        layer.close(index1);
+                    }else{
+                        layer.close(index1);
+                        layer.msg(result.data,{icon:5});
+                    }
+                }else{
+                    layer.close(index1);
+                    layer.msg('请求失败!',{icon:5});
+                }
+            })
+
+        }
+    }
+    window.operateEvents = {
+        // 点击修改按钮执行的方法
+        'click #btn_edit': function (e, value, row, index) {
+            layer.open({
+                type:2,
+                title: '编辑部门'
+                ,content: '/deptForm?id='+row.id,
+                name:'form_add',
+                area: ['500px', '300px'],
+                btn:[]
+            });
+        },
+        // 点击删除按钮执行的方法
+        'click #btn_delete': function (e, value, row, index) {
+            layer.confirm("确认删除吗？",{
+                yes:function (index) {
+                    var ids=[];
+                    ids.push(row.id);
+                    deleteIds(ids);
+                    layer.close(index);
+                }
+            });
+        }
+    };
+    function deleteIds(ids) {
+        $.ajax({
+            url: "/dept/delete",
+            contentType: "application/json",
+            data: JSON.stringify(ids),
+            type: "post",
+            success: function (result) {
+                if (result.code == "00") {
+                    layer.msg("删除成功！", {icon: 6, time: 1000});
+                    $('#dept_table').bootstrapTable('refresh');
+                } else {
+                    layer.msg(result.data, {icon: 5});
+                }
+            },
+            error: function (jqXHR, textStatus, errorThrown) {
+                layer.msg(errorThrown, {icon: 5});
+            }
+
+        });
+    }
+    var head = [{
+        checkbox: true
+    },
+        {
+            field:'id',
+            title:'ID',
+            align: 'center',
+            sortable:true
+        },{
+            field:'name',
+            title:'部门名称',
+            align: 'center',
+            sortable:true
+        },
+        {
+            field:'location',
+            title:'部门地点',
+            align: 'center',
+            sortable:true
+        }, {
+            field:'state',
+            title:'是否有效',
+            align: 'center',
+            sortable:true,
+            formatter:setPng,
+            events:changStatus
+        },{
+            field: 'operation',
+            title: '操作',
+            align: 'center',
+            events:operateEvents,//给按钮注册事件
+            formatter:addFunctionAlty//表格中增加按钮</span>
+        }];
+    $('#dept_table').bootstrapTable({
+        url: '/dept/deptList',
+        method: 'get',
+        toolbar: '#toolbar',
+        striped: true,
+        pagination: true,
+        sidePagination: 'server',
+        pageNumber: 1,
+        pageSize: 5,
+        pageList: [5, 10, 20, 50, 100],
+        queryParams: function (params) {
+            curPage=params.offset / params.limit;
+            size=params.limit;
+            console.log(params);
+
+            var para={
+                pageSize: params.limit,
+                pageNum: params.offset / params.limit
+
+            };
+            if(params.sort!=null&&params.sort!=""){
+                sortName=params.sort;
+                sortOrder=params.order == "asc" ? 0 : 1;
+                para.sortName=params.sort;
+                para.sortOrder=params.order == "asc" ? 0 : 1;
+            }
+            para.id=$('#txt_search_id').val();
+            para.name=$('#txt_search_name').val();
+            para.location=$('#txt_search_location').val();
+            para.state=$('#txt_search_status').val();
+            return para;
+        },
+        showColumns: true,                  //是否显示所有的列
+        showRefresh: true,                  //是否显示刷新按钮
+        showPaginationSwitch: true,
+        //  showFullscreen:true,
+        minimumCountColumns: 2,             //最少允许的列数
+        //   clickToSelect: true,                //是否启用点击选中行
+        uniqueId: "id",                     //每一行的唯一标识，一般为主键列
+        showToggle: true,                    //是否显示详细视图和列表视图的切换按钮
+        cardView: false,                    //是否显示详细视图
+        responseHandler: function (res) {
+            var json = {};
+            var data = res.content;
+            json.page = res.number + 1;
+            json.total = res.totalElements;
+            json.rows = data;
+            console.log(json);
+            return json;
+        },
+        columns: head
+
+
+    });
+
+
+    $("#btn_delete").click(function () {
+        layer.confirm("确认删除吗？", {
+            yes: function () {
+                var select = $('#dept_table').bootstrapTable("getSelections");
+                if (select != null && select != '' & select.length > 0) {
+                    var ids = [];
+                    for (var i in select) {
+                        ids.push(select[i].id);
+                    }
+                    // console.log(ids);
+                    deleteIds(ids);
+                } else {
+                    layer.msg("未选择！");
+                }
+            }
+
+        })});
+    $("#btn_query").click(function () {
+        $('#dept_table').bootstrapTable('selectPage',1);
+       refresh();
+
+    });
+
+
+    function refresh() {
+        $('#dept_table').bootstrapTable('refresh');
+    }
+    $("#btn_add").click(function () {
+        layer.open({
+            type:2,
+            title: '添加部门'
+            ,content: 'deptForm.html',
+            name:'form_add',
+            area: ['500px', '300px'],
+            btn:[]
+        });
+    })
+    $(".panel-heading").click(function () {
+        $("#searchInput").toggle();
+    })
+</script>
+</html>

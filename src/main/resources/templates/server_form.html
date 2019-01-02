@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.w3.org/1999/xhtml">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <link th:href="@{/bootstrap/bootstrap.css}" rel="stylesheet">
+    <link th:href="@{/bootstrap-table/bootstrap-table.css}" rel="stylesheet">
+    <link th:href="@{/jsTree/themes/default/style.css}" rel="stylesheet">
+    <script type="text/javascript" src="https://code.jquery.com/jquery-3.3.1.js"></script>
+    <script type="text/javascript" th:src="@{/jsTree/jstree.js}"></script>
+    <script type="text/javascript" th:src="@{/layui/layer.js}"></script>
+    <script type="text/javascript" th:src="@{/js/util.js}"></script>
+    <script type="text/javascript" th:src="@{/bootstrap/bootstrap.js}"></script>
+    <script type="text/javascript" th:src="@{/bootstrap-table/bootstrap-table.js}"></script>
+    <script type="text/javascript" th:src="@{/bootstrap-table/bootstrap-table-zh-CN.js}"></script>
+</head>
+<body>
+<div class="modal-body">
+    <form class="form-horizontal">
+        <div class="form-group">
+            <label for="ip" class="col-sm-2 control-label">类型</label>
+            <div class="col-sm-4">
+                <select class="form-control" id="select">
+                    <option value="1">ftp服务器</option>
+                    <option value="2" id="share">共享目录</option>
+                </select>
+
+            </div>
+        </div>
+        <div class="form-group">
+            <label for="ip" class="col-sm-2 control-label">ip地址</label>
+            <div class="col-sm-4">
+                <input type="text" name="ip" class="form-control" id="ip" >
+            </div>
+        </div>
+        <div class="form-group" id="form-port">
+            <label for="port" class="col-sm-2 control-label">端口</label>
+            <div class="col-sm-4">
+                <input type="text" name="port" class="form-control" id="port" >
+            </div>
+        </div>
+        <div class="form-group">
+            <label for="username" class="col-sm-2 control-label">用户名</label>
+            <div class="col-sm-4">
+                <input type="text" class="form-control" id="username"  name="username">
+            </div>
+        </div>
+        <div class="form-group">
+            <label for="password" class="col-sm-2 control-label">密码</label>
+            <div class="col-sm-4">
+                <input type="password" class="form-control" id="password"  name="password">
+            </div>
+        </div>
+    </form>
+    <div style="text-align: center">
+        <button type="button" class="btn   btn-primary " id="submit">提交</button>
+    </div>
+
+</div>
+</body>
+<script>
+    var isEdit=false;
+    var url=window.location.href;
+    var editId='';
+    var status;
+    if(url.indexOf("?")!=-1){
+        isEdit=true;
+        var para=url.substring(url.indexOf("?"));
+        editId =para.substring(4);
+        $.getJSON("/server/"+editId,function (result,state) {
+            if(state=='success'){
+                var data=result.data;
+                if(result.code=='00'){
+                    status=data.status;
+                    if(data.type==2){
+                        $('#share').attr("selected","selected");
+                        $('#form-port').hide();
+                    }
+                    $("#ip").val(data.ip);
+                    $("#port").val(data.port);
+                    $("#username").val(data.username);
+                    $("#password").val(data.password);
+
+                }
+            }
+        })
+    }
+    $('#select').change(function () {
+        if($(this).val()==2){
+            $('#form-port').hide();
+        }else{
+            $('#form-port').show();
+        }
+    });
+    $('#submit').click(function () {
+        var data=$('form').serializeObject();
+        if(editId!='') {
+            data.id = editId;
+            data.status = status;
+        }
+        data.type=$('#select').val();
+        console.log(data);
+        $.post("/server/saveOrUpdate",data,function (result,status) {
+            if(status=='success'){
+                if(result.code=='00'){
+                    var index = parent.layer.getFrameIndex(window.name); //先得到当前iframe层的索引
+                    parent.layer.close(index);
+                    parent.refresh();
+                    parent.layer.msg("添加成功!",{icon:6,time:1000});
+
+                }
+            }
+        })
+    })
+
+</script>
+
+</html>

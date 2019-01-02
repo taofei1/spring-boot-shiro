@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.w3.org/1999/xhtml">
+<head>
+    <meta charset="UTF-8">
+    <title>代码表编辑</title>
+    <link th:href="@{/bootstrap/bootstrap.css}" rel="stylesheet">
+    <link th:href="@{/bootstrap-table/bootstrap-table.css}" rel="stylesheet">
+    <link th:href="@{/jsTree/themes/default/style.css}" rel="stylesheet">
+    <script type="text/javascript" src="https://code.jquery.com/jquery-3.3.1.js"></script>
+    <script type="text/javascript" th:src="@{/jsTree/jstree.js}"></script>
+    <script type="text/javascript" th:src="@{/layui/layer.js}"></script>
+    <script type="text/javascript" th:src="@{/js/util.js}"></script>
+    <script type="text/javascript" th:src="@{/bootstrap/bootstrap.js}"></script>
+    <script type="text/javascript" th:src="@{/bootstrap-table/bootstrap-table.js}"></script>
+    <script type="text/javascript" th:src="@{/bootstrap-table/bootstrap-table-zh-CN.js}"></script>
+</head>
+<body>
+<div class="modal-body">
+    <form class="form-horizontal">
+        <div class="form-group">
+            <label for="code" class="col-sm-2 control-label">代码</label>
+            <div class="col-sm-4">
+                <input type="text" name="code" class="form-control" id="code" >
+            </div>
+            <label for="value" class="col-sm-2 control-label">值</label>
+            <div class="col-sm-4">
+                <input type="text" name="value" class="form-control" id="value" >
+            </div>
+        </div>
+
+        <div class="form-group" id="form-port">
+            <label for="cate" class="col-sm-2 control-label">分类标识</label>
+            <div class="col-sm-4">
+                <input type="text" name="cate" class="form-control" id="cate" >
+            </div>
+            <label for="cateName" class="col-sm-2 control-label">类别名称</label>
+            <div class="col-sm-4">
+                <input type="text" class="form-control" id="cateName"  name="cateName">
+            </div>
+        </div>
+
+    </form>
+    <div style="text-align: center">
+        <button type="button" class="btn   btn-primary " id="submit">提交</button>
+    </div>
+
+</div>
+</body>
+<script>
+    var isEdit=false;
+    var url=window.location.href;
+    var editId='';
+    var status;
+    if(url.indexOf("?")!=-1){
+        isEdit=true;
+        var para=url.substring(url.indexOf("?"));
+        editId =para.substring(4);
+        $.getJSON("/codeTable/"+editId,function (result,state) {
+            if(state=='success'){
+                var data=result.data;
+                if(result.code=='00'){
+                    status=data.status;
+                    $("form").setValue(data);
+
+                }
+            }
+        })
+    }
+    $('#select').change(function () {
+        if($(this).val()==2){
+            $('#form-port').hide();
+        }else{
+            $('#form-port').show();
+        }
+    });
+    $('#submit').click(function () {
+        var data=$('form').serializeObject();
+        if(editId!='') {
+            data.id = editId;
+            data.status = status;
+        }
+        console.log(data);
+        $.post("/codeTable/saveOrUpdate",data,function (result,status) {
+            if(status=='success'){
+                if(result.code=='00'){
+                    var index = parent.layer.getFrameIndex(window.name); //先得到当前iframe层的索引
+                    parent.layer.close(index);
+                    parent.refresh();
+                    parent.layer.msg("添加成功!",{icon:6,time:1000});
+
+                }
+            }
+        })
+    })
+
+</script>
+
+</html>

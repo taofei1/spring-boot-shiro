@@ -1,0 +1,462 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.w3.org/1999/xhtml">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <link th:href="@{/bootstrap/bootstrap.css}" rel="stylesheet">
+    <link th:href="@{/bootstrap-table/bootstrap-table.css}" rel="stylesheet">
+    <link th:href="@{/jsTree/themes/default/style.css}" rel="stylesheet">
+    <link th:href="@{/cron/cronGen.css}" rel="stylesheet">
+    <link rel="stylesheet" type="text/css" th:href="@{/select/bootstrap-select.css}" />
+    <script type="text/javascript" src="https://code.jquery.com/jquery-3.3.1.js"></script>
+    <script type="text/javascript" th:src="@{/jsTree/jstree.js}"></script>
+    <script type="text/javascript" th:src="@{/js/cronParse.js}"></script>
+    <script type="text/javascript" th:src="@{/layui/layer.js}"></script>
+    <script type="text/javascript" th:src="@{/laydate/laydate.js}"></script>
+    <script type="text/javascript" th:src="@{/js/util.js}"></script>
+    <script type="text/javascript" th:src="@{/bootstrap/bootstrap.js}"></script>
+    <script type="text/javascript" th:src="@{/cron/cronGen.js}"></script>
+    <script type="text/javascript" th:src="@{/select/bootstrap-select.js}"></script>
+    <script type="text/javascript" th:src="@{/bootstrap-table/bootstrap-table.js}"></script>
+    <script type="text/javascript" th:src="@{/bootstrap-table/bootstrap-table-zh-CN.js}"></script>
+</head>
+<body>
+<div class="modal-body">
+    <form class="form-horizontal">
+        <div class="form-group">
+            <label for="name" class="col-sm-2 control-label">同步任务名称</label>
+            <div class="col-sm-4">
+                <input type="text" name="name" class="form-control" id="name" >
+            </div>
+
+            <label for="origin" class="col-sm-2 control-label">源服务器</label>
+            <div class="col-sm-4">
+                <input type="text"  class="form-control" id="origin"  onclick="alertServerTable()">
+                <input type="hidden" name="originId" class="form-control" id="originId">
+            </div>
+        </div>
+        <div class="form-group">
+            <label for="originPath" class="col-sm-2 control-label">源目录</label>
+            <div class="col-sm-4">
+                <input type="text" class="form-control" id="originPath"  name="originPath">
+            </div>
+            <label for="target" class="col-sm-2 control-label">目标服务器</label>
+            <div class="col-sm-4">
+                <input type="text" class="form-control"  id="target"   onclick="alertServerTable()">
+                <input type="hidden" name="targetId" class="form-control" id="targetId">
+            </div>
+        </div>
+        <div class="form-group">
+            <label for="targetPath" class="col-sm-2 control-label">目标目录</label>
+            <div class="col-sm-4">
+                <input type="text" class="form-control" id="targetPath"  name="targetPath">
+            </div>
+            <label for="cron" class="col-sm-2 control-label">执行时间</label>
+            <div class="col-sm-4">
+                <input type="hidden"  class="form-control" id="cron">
+                <span class="form-control" id="chCron" color="red"></span>
+
+            </div>
+        </div>
+        <div class="form-group">
+            <label for="nameFilter" class="col-sm-2 control-label">名称过滤</label>
+            <div class="col-sm-4">
+                <input type="text" class="form-control" id="nameFilter"  name="nameFilter">
+            </div>
+            <label for="isRegex" class="col-sm-2 control-label">过滤类型</label>
+            <div class="col-sm-4">
+                <select id="isRegex" class="form-control">
+                    <option value='0'>普通模式</option>
+                    <option value='1'>正则表达式</option>
+                </select>
+            </div>
+        </div>
+        <div class="form-group">
+            <label for="select" class="col-sm-2 control-label" >日期过滤(默认前一天至当天)</label>
+            <div class="checkbox col-sm-4">
+                <select id="select" class="form-control">
+                    <option value="0" ></option>
+                </select>
+            </div>
+            <label for="scanSubDir" class="col-sm-2 control-label">是否扫描子目录</label>
+            <div class="checkbox col-sm-4">
+                <label>
+                    <input type="checkbox"  id="scanSubDir">
+                </label>
+            </div>
+
+        </div>
+        <div class="form-group">
+            <label for="dateFormat" class="col-sm-5 control-label">日期格式(yyyyMMdd yyyy-MM-dd MM-dd MMdd)</label>
+            <div class="col-sm-6" id="dateFormat">
+                <select  data-width="fit" title=""  data-actions-box="true" id="select_date_format" class="selectpicker bla bla bli" multiple data-live-search="true">
+
+                </select>
+
+            </div>
+        </div>
+        <div class="form-group">
+
+            <label for="isCopyAll" class="col-sm-2 control-label">是否复制所有</label>
+            <div class="checkbox col-sm-4">
+                <label>
+                    <input type="checkbox"  id="isCopyAll">
+                </label>
+            </div>
+            <label for="priority" class="col-sm-2 control-label">触发优先级</label>
+            <div class="col-sm-4">
+                <input type="text" class="form-control" id="priority"  name="priority">
+            </div>
+        </div>
+        <div class="form-group">
+            <label for="isValidNameDate" class="col-sm-2 control-label">是否验证名称日期</label>
+            <div class="checkbox col-sm-4">
+                <label>
+                    <input type="checkbox"  id="isValidNameDate">
+                </label>
+            </div>
+            <label for="isValidDate" class="col-sm-2 control-label">是否验证修改日期</label>
+            <div class="checkbox col-sm-4">
+                <label>
+                    <input type="checkbox"  id="isValidDate">
+                </label>
+            </div>
+
+
+        </div>
+        <div class="form-group">
+            <label for="isDeCompress" class="col-sm-2 control-label">是否解压缩(选中此下面才生效)</label>
+            <div class="checkbox col-sm-4">
+                <label>
+                    <input type="checkbox"  id="isDeCompress">
+                </label>
+            </div>
+            <label for="isKeepDirTree" class="col-sm-2 control-label">是否保持目录层次</label>
+            <div class="checkbox col-sm-4">
+                <label>
+                    <input type="checkbox"  id="isKeepDirTree">
+                </label>
+            </div>
+
+
+        </div>
+        <div class="form-group">
+            <label for="isTransformFilename" class="col-sm-2 control-label">是否转换文件名(目录名_文件名)</label>
+            <div class="checkbox col-sm-4">
+                <label>
+                    <input type="checkbox"  id="isTransformFilename">
+                </label>
+            </div>
+            <label for="isKeepSource" class="col-sm-2 control-label">是否保留源文件</label>
+            <div class="checkbox col-sm-4">
+                <label>
+                    <input type="checkbox"  id="isKeepSource">
+                </label>
+            </div>
+        </div>
+        <div>
+            <label for="isFilterCompressFile" class="col-sm-2 control-label">是否对解压后的文件过滤</label>
+            <div class="checkbox col-sm-4">
+                <label>
+                    <input type="checkbox"  id="isFilterCompressFile">
+                </label>
+            </div>
+            <label for="group" class="col-sm-2 control-label">所属任务组</label>
+            <div class="checkbox col-sm-4">
+                <select id="group" class="form-control">
+                    <option value="0" ></option>
+                </select>
+            </div>
+
+        </div>
+        <div style="text-align: center" class="form-group">
+            <button type="button" class="btn   btn-primary " id="submit">提交</button>
+        </div>
+    </form>
+
+
+</div>
+</body>
+<script>
+    $.ajax({
+        url :"/codeTable/cate/date_format",
+        dataType:"json",
+        async:false,
+        success:function(result){
+            var data=result.data;
+            for(var i=0;i<data.length;i++) {
+               var option="<option  lay-ignore value="+data[i].value;
+               if(data[i].status=='0'){
+                   option+=" disabled "
+               }
+                option+=">"+data[i].value+"</option>"
+                $("#select_date_format").append(option);
+            }
+
+
+        }
+    });
+    $('.selectpicker').selectpicker('render');
+    function parseDays(val){
+        if(val==null||val==""){
+            return '';
+        }
+        var reg=/\d/;
+        if(!reg.test(val)||val>0){
+            return '解析失败！'
+        }
+        if(val==0){
+            return '当天';
+        }else {
+            return '前'+(-val)+'天';
+        }
+    }
+    function setDateInterval(value) {
+        if(value==null||value==""){
+            return "";
+        }
+        var arr=value.split(",");
+        return '从'+parseDays(arr[0])+'到'+parseDays(arr[1]);
+    }
+    function setSingleDate(value){
+        var arr=value.split(",");
+        var val="";
+        for(var i in arr){
+            val+=parseDays(arr[i])+",";
+        }
+        return val==""?val:val.substr(0,val.length-1);
+
+    }
+    $.getJSON("/taskEntity/all",function (result,status) {
+        if(status=='success') {
+            if (result.code == '00') {
+                var data = result.data;
+                console.log(data);
+                for (var i in data) {
+                    var option = "<option value=" + data[i].id+">"+data[i].groupName+"</option>";
+                    $("#group").append(option);
+                }
+            }
+        }
+    });
+    $.getJSON("/dateInterval/all",function (result,status) {
+
+       if(status=='success'){
+
+           if(result.code=='00'){
+               var data=result.data;
+               for(var i in data){
+                   var option="<option value="+data[i].id;
+                   if(data[i].status =='0'){
+                       option+=" disabled style='color:red'";
+                   }
+                   option+=">"
+                   if(setSingleDate(data[i].singleDate)!=""){
+                       option+='['+setSingleDate(data[i].singleDate)+']';
+                   }
+                   if(setDateInterval(data[i].dateRange)!=""){
+                       option+='['+setDateInterval(data[i].dateRange)+']';
+                   }
+                   option+="</option>";
+                   $("#select").append(option);
+               }
+           }
+       }
+    });
+    $("#cron").cronGen({
+        direction : 'left'
+    });
+
+    var isEdit=false;
+    var url=window.location.href;
+    var editId='';
+    var jobStatus;
+    if(url.indexOf("?")!=-1){
+        isEdit=true;
+        var para=url.substring(url.indexOf("?"));
+        editId =para.substring(4);
+        $.getJSON("/syncFilePlan/"+editId,function (result,state) {
+            if(state=='success'){
+                var data=result.data;
+                console.log(data);
+                if(result.code=='00'){
+                    jobStatus=data.jobStatus;
+                    $("form").setValue(data);
+                    $("#cron").val(data.cronExpression);
+                    $("#chCron").text(cronParse(data.cronExpression));
+                    if(data.dateInterval!=null){
+                        $("#select option[value="+data.dateInterval.id+"]").attr("selected","selected");
+                    }
+                    if(data.taskEntity!=null){
+                        $("#group").val(data.taskEntity.id);
+                    }
+
+                    $("#isRegex").val(data.isRegex);
+                   if(data.originId==-1){
+                       $("#origin").val("本地");
+                       $("#originId").val("-1");
+                   }else {
+
+                       var server=data.originServer;
+                       var val=server.ip;
+                       if(server.type==1){
+                           val+='[ftp服务器]';
+                       }else if(server.type==2){
+                           val+='[共享目录]'
+                       }
+                       $("#origin").val(val);
+                       $("#originId").val(server.id);
+                   }
+                    if(data.targetId==-1){
+                        $("#target").val("本地");
+                        $("#targetId").val("-1");
+                    }else {
+
+                        var server=data.targetServer;
+                        var val=server.ip;
+                        if(server.type==1){
+                            val+='[ftp服务器]';
+                        }else if(server.type==2){
+                            val+='[共享目录]'
+                        }
+                        $("#target").val(val);
+                        $("#targetId").val(server.id);
+                    }
+                    if(data.isScanSubDir==1){
+                        $("#scanSubDir").attr("checked","checked");
+                    }
+                    if(data.isValidDate==1){
+                        $("#isValidDate").attr("checked","checked");
+                    }
+                    if(data.isCopyAll==1){
+                        $("#isCopyAll").attr("checked","checked");
+                    }
+                    if(data.isValidNameDate==1){
+                        $("#isValidNameDate").attr("checked","checked");
+                    }
+                    if(data.isDeCompress==1){
+                        $("#isDeCompress").attr("checked","checked");
+                    }
+                    if(data.isKeepDirTree==1){
+                        $("#isKeepDirTree").attr("checked","checked");
+                    }
+                    if(data.isKeepSource==1){
+                        $("#isKeepSource").attr("checked","checked");
+                    }
+                    if(data.isTransformFilename==1){
+                        $("#isTransformFilename").attr("checked","checked");
+                    }
+                    if(data.isFilterCompressFile==1){
+                        $("#isFilterCompressFile").attr("checked","checked");
+                    }
+                    if(data.dirFilterFormat!=null&&data.dirFilterFormat!=''){
+                       var dateFormatArr=data.dirFilterFormat.split(",");
+
+                        $('#select_date_format').selectpicker('val',dateFormatArr);
+                        $("#select_date_format").selectpicker('refresh');
+
+                    }
+
+                }
+            }
+        })
+    }
+    $('#submit').click(function () {
+        var data=$('form').serializeObject();
+        if(editId!='') {
+            data.id = editId;
+            data.jobStatus = jobStatus;
+        }
+        if($("#scanSubDir").is(':checked')){
+            data.isScanSubDir='1';
+        }else{
+            data.isScanSubDir='0';
+        }
+        if($("#isValidDate").is(':checked')){
+            data.isValidDate='1';
+        }else{
+            data.isValidDate='0';
+        }
+        if($("#isCopyAll").is(':checked')){
+            data.isCopyAll='1';
+        }else{
+            data.isCopyAll='0';
+        }
+        if($("#isValidNameDate").is(':checked')){
+            data.isValidNameDate='1';
+        }else{
+            data.isValidNameDate='0';
+        }
+        if($("#isDeCompress").is(':checked')){
+            data.isDeCompress='1';
+        }else{
+            data.isDeCompress='0';
+        }
+        if($("#isKeepDirTree").is(':checked')){
+            data.isKeepDirTree='1';
+        }else{
+            data.isKeepDirTree='0';
+        }
+        if($("#isKeepSource").is(':checked')){
+            data.isKeepSource='1';
+        }else{
+            data.isKeepSource='0';
+        }
+        if($("#isTransformFilename").is(':checked')){
+            data.isTransformFilename='1';
+        }else{
+            data.isTransformFilename='0';
+        }
+        if($("#isFilterCompressFile").is(':checked')){
+            data.isFilterCompressFile='1';
+        }else{
+            data.isFilterCompressFile='0';
+        }
+        data.dateIntervalId=$("#select option:selected").val();
+        data.taskEntityId=$("#group option:selected").val();
+        data.isRegex=$("#isRegex option:selected").val();
+        data.dirFilterFormat=getSelectValueToArray("select_date_format");
+        console.log(data);
+        $.post("/syncFilePlan/saveOrUpdate",data,function (result,state) {
+            if(state=='success'){
+                if(result.code=='00'){
+                    var index = parent.layer.getFrameIndex(window.name); //先得到当前iframe层的索引
+                    parent.layer.close(index);
+                    parent.refresh();
+                    parent.layer.msg("添加成功!",{icon:6,time:1000});
+
+                }
+            }
+        })
+    });
+
+    function alertServerTable(e){
+        var ev=event||e;
+        var id=ev.target.id;
+        layer.open({
+            type:2,
+            title: '选择服务器'
+            ,content: 'serverTableAlert?'+id+'='+$("#"+id+"Id").val(),
+            name:'serverChoose',
+            area: ['700px', '400px'],
+            btn:[]
+        });
+    }
+    function getSelectValueToArray(id){
+
+        var str="";
+        if($("#"+id).selectpicker('val')!=null){
+           var value=$("#"+id).selectpicker('val');
+            for(var i in value){
+                str=str+value[i]+",";
+            }
+        }
+        if(str!=""){
+            return str.substr(0,str.length-1);
+        }else{
+            return "";
+        }
+    }
+</script>
+
+</html>

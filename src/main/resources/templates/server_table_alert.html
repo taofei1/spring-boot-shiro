@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.w3.org/1999/xhtml">
+<head>
+    <meta charset="UTF-8">
+    <title>服务器表</title>
+    <link th:href="@{/bootstrap/bootstrap.css}" rel="stylesheet">
+    <link th:href="@{/bootstrap-table/bootstrap-table.css}" rel="stylesheet">
+    <link th:href="@{/jsTree/themes/default/style.css}" rel="stylesheet">
+    <script type="text/javascript" src="https://code.jquery.com/jquery-3.3.1.js"></script>
+    <script type="text/javascript" th:src="@{/jsTree/jstree.js}"></script>
+    <script type="text/javascript" th:src="@{/layui/layer.js}"></script>
+    <script type="text/javascript" th:src="@{/bootstrap/bootstrap.js}"></script>
+    <script type="text/javascript" th:src="@{/bootstrap-table/bootstrap-table.js}"></script>
+    <script type="text/javascript" th:src="@{/bootstrap-table/bootstrap-table-zh-CN.js}"></script>
+</head>
+<body>
+<div class="panel-body" style="padding-bottom:0px;">
+    <button type="button" id="btn_edit" class="btn btn-info " onclick="setValue()">本地</button>
+
+    <table id="server_table">
+
+    </table>
+</div>
+</body>
+<script>
+    function setValue() {
+        var index = parent.layer.getFrameIndex(window.name); //先得到当前iframe层的索引
+        parent.layer.close(index);
+        var s=oper.substring(0,oper.indexOf('='));
+        $("#"+s, parent.document).val("本地");
+        $("#"+s+"Id", parent.document).val("-1");
+    }
+    var curPage=0;
+    var size=5;
+    var sortName;
+    var sortOrder;
+    var url=window.location.href;
+    var oper=url.substring(url.indexOf("?")+1);
+    function setType(value, row, index) {
+        if(value==1){
+            return "ftp服务器";
+        }else if(value==2){
+            return "共享目录";
+        }else{
+            return "";
+        }
+    }
+
+
+    var head = [
+        {
+            checkbox:true
+        },
+        {
+            field:'id',
+            title:'ID',
+            align: 'center',
+            sortable:true
+        },{
+            field:'ip',
+            title:'IP地址',
+            align: 'center',
+            sortable:true
+        },
+        {
+            field:'port',
+            title:'端口',
+            align: 'center',
+            sortable:true
+        },  {
+            field:'username',
+            title:'用户名',
+            align: 'center',
+            sortable:true
+        }, {
+            field:'type',
+            title:'类型',
+            align: 'center',
+            sortable:true,
+            formatter:setType
+        }];
+    $('#server_table').bootstrapTable({
+        url: '/server/serverList',
+        method: 'get',
+        striped: true,
+        pagination: true,
+        sidePagination: 'server',
+        pageNumber: 1,
+        pageSize: 5,
+        pageList: [5, 10, 20, 50, 100],
+        queryParams: function (params) {
+            curPage=params.offset / params.limit;
+            size=params.limit;
+
+            var para={
+                pageSize: params.limit,
+                pageNum: params.offset / params.limit,
+                status:1
+
+            };
+            if(params.sort!=null&&params.sort!=""){
+                sortName=params.sort;
+                sortOrder=params.order == "asc" ? 0 : 1;
+                para.sortName=params.sort;
+                para.sortOrder=params.order == "asc" ? 0 : 1;
+            }
+            if($('#txt_search_id').val()!='') {
+                para.id = $('#txt_search_id').val();
+            }
+            if($('#txt_search_ip').val()!=''){para.ip=$('#txt_search_ip').val();}
+            if($('#txt_search_port').val()!='') {
+                para.port = $('#txt_search_port').val();
+            }
+            if($('#txt_search_username').val()!='') {
+                para.username = $('#txt_search_username').val();
+            }
+            if($('#txt_search_password').val()!='') {
+                para.password = $('#txt_search_password').val();
+            }
+            if($('#txt_search_type').val()!='') {
+                para.type = $('#txt_search_type').val();
+            }
+
+            return para;
+        },
+        showColumns: true,                  //是否显示所有的列
+       // showRefresh: true,                  //是否显示刷新按钮
+        showPaginationSwitch: true,
+        //  showFullscreen:true,
+        minimumCountColumns: 2,             //最少允许的列数
+        //   clickToSelect: true,                //是否启用点击选中行
+        uniqueId: "id",                     //每一行的唯一标识，一般为主键列
+      //  showToggle: true,                    //是否显示详细视图和列表视图的切换按钮
+       // cardView: false,                    //是否显示详细视图
+        onCheck:function (row) {
+            var index = parent.layer.getFrameIndex(window.name); //先得到当前iframe层的索引
+            parent.layer.close(index);
+            var val=row.ip;
+
+            switch(row.type)
+            {
+                case '1':
+                    val+='[fpt服务器]';
+                    console.log(val);
+                    break;
+                case '2':
+                    console.log(val);
+                    val+='[共享目录]';
+                    break;
+
+            }
+            var s=oper.substring(0,oper.indexOf('='));
+
+            $("#"+s, parent.document).val(val);
+            $("#"+s+"Id", parent.document).val(row.id);
+        },
+        responseHandler: function (res) {
+            var json = {};
+            var data = res.content;
+            json.page = res.number + 1;
+            json.total = res.totalElements;
+            json.rows = data;
+            return json;
+        },
+        onLoadSuccess:function (data) {
+            var id=oper.substring(oper.indexOf('=')+1);
+            if(id!="") {
+                var datArr = data.rows;
+                for (var i in datArr) {
+
+                   if(id==datArr[i].id){
+                       console.log(i);
+                       $('#server_table tbody').find("tr").eq(i).find("input[type='checkbox']").attr("checked","checked");
+                   }
+                }
+
+            }
+        },
+        columns: head
+
+
+    });
+    $("input[name='btSelectAll']").hide();
+</script>
+</html>
