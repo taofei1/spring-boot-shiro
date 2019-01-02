@@ -20,7 +20,6 @@ import org.springframework.stereotype.Component;
 @Component
 public class WebSocketServer {
     //静态变量，用来记录当前在线连接数。应该把它设计成线程安全的。
-    private static Logger log= LoggerFactory.getLogger(WebSocketServer.class);
     private static int onlineCount = 0;
     //concurrent包的线程安全Set，用来存放每个客户端对应的MyWebSocket对象。
    private static CopyOnWriteArraySet<WebSocketServer> webSocketSet = new CopyOnWriteArraySet<WebSocketServer>();

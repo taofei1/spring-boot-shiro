@@ -77,4 +77,6 @@ public class DateIntervalServiceImpl implements DateIntervalService {
     public List<DateInterval> findByStatus(int i) {
         return dateIntervalDao.findByStatus(i);
     }
+
+
 }

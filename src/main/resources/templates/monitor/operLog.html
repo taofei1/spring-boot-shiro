@@ -51,8 +51,9 @@
 </body>
 <script th:src="@{/layui-v2.4.5/layui/layui.js}"></script>
 <script th:src="@{/js/util.js}"></script>
-<script>
+<script  th:inline="javascript">
     layui.use(['table','layer','laydate'], function(){
+        var type=[[${@codeTableService.findByCate("oper_type")}]];
         var table = layui.table;
         var laydate=layui.laydate;
         $('.date').each(function () {
@@ -93,28 +94,15 @@
                 {field: 'operId', title: '编号',sort: true,width:70},
                 {field: 'title', title: '系统模块', sort: true}
                 ,{field: 'operType', title: '操作类型',width:100,align:'center',sort: true,templet: function(d){
-                    switch(d.operType){
-                        case 0:
-                            return ' <a class="layui-btn layui-btn-radius layui-btn-normal layui-btn-xs" >其它</a>';
-                        case 1:
-                            return ' <a class="layui-btn layui-btn-radius layui-btn-normal layui-btn-xs" >新增</a>';
-                        case 2:
-                            return ' <a class="layui-btn layui-btn-radius layui-btn-warm layui-btn-xs" >修改</a>';
-                        case 3:
-                            return ' <a class="layui-btn layui-btn-radius layui-btn-danger layui-btn-xs" >删除</a>';
-                        case 4:
-                            return ' <a class="layui-btn layui-btn-radius layui-btn-warm layui-btn-xs" >授权</a>';
-                        case 5:
-                            return ' <a class="layui-btn layui-btn-radius layui-btn-xs" >导出</a>';
-                        case 6:
-                            return ' <a class="layui-btn layui-btn-radius  layui-btn-xs" >导入</a>';
-                        case 7:
-                            return ' <a class="layui-btn layui-btn-radius layui-btn-normal layui-btn-xs" >生成代码</a>';
-                        case 8:
-                            return ' <a class="layui-btn layui-btn-radius layui-btn-danger layui-btn-xs" >清空</a>';
-                        default:
-                            return ' <a class="layui-btn layui-btn-radius layui-btn-normal layui-btn-xs" >其它</a>';;
-                    }
+                    var a="";
+                    $.each(type,function (index,data) {
+                        console.log(data.code);
+                        if(data.code==d.operType){
+                            a=data.value;
+                        }
+                    });
+                    return ' <a class="layui-btn layui-btn-radius layui-btn-normal layui-btn-xs" >'+a+'</a>';
+
 
                 }}
                 ,{field: 'operName', title: '操作人员',sort: true}

@@ -13,7 +13,7 @@ import org.springframework.stereotype.Service;
 
 import javax.transaction.Transactional;
 import java.util.List;
-@Service
+@Service("codeTableService")
 public class CodeTableServiceImpl implements CodeTableService {
     @Autowired
     private CodeTableDao codeTableDao;
@@ -76,5 +76,16 @@ public class CodeTableServiceImpl implements CodeTableService {
         return codeTableDao.save(codeTable);
     }
 
+    /**
+     * 以下两种方法仅供thymeleaf直接调用
+     * @param cate 分类名
+     * @return  列表
+     */
+    public List<CodeTable> findByCate(String cate){
+        return codeTableDao.findByCate(cate);
+    }
+    public CodeTable findByCateAndCode(String cate,String code){
+        return codeTableDao.findByCateAndAndCode(cate,code);
+    }
 
 }

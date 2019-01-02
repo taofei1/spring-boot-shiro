@@ -12,6 +12,7 @@ import com.neo.factory.AsyncTaskFactory;
 import com.neo.pojo.OperLog;
 import com.neo.thread.ExecutorServiceHelper;
 import com.neo.util.*;
+import lombok.extern.slf4j.Slf4j;
 import org.aspectj.lang.JoinPoint;
 import org.aspectj.lang.Signature;
 import org.aspectj.lang.annotation.*;
@@ -27,9 +28,9 @@ import org.springframework.stereotype.Component;
  */
 @Aspect
 @Component
+@Slf4j
 public class LogAspect
 {
-    private static final Logger log = LoggerFactory.getLogger(LogAspect.class);
 
     // ≈‰÷√÷Ø»Îµ„
     @Pointcut("@annotation(com.neo.annotation.Log)")
