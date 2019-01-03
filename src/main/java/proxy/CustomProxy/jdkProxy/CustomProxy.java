@@ -1,8 +1,10 @@
-package proxy.CustomProxy;
+package proxy.CustomProxy.jdkProxy;
 import proxy.CustomProxy.DynamicJavac.DynamicCompile;
 import java.io.*;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
+
 public class CustomProxy {
     public static Object getProxy(Class clazz,CustomHandler customHandler) throws Exception {
         String pname=clazz.getSimpleName();

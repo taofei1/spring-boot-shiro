@@ -112,6 +112,9 @@ entity:
 pagehelper:
   reasonable: true
 
+feifei:
+  profile: D:/profile/
+
 
 
 

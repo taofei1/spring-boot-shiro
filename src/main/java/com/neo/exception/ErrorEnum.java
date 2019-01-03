@@ -3,7 +3,8 @@ package com.neo.exception;
 public enum ErrorEnum {
     DATA_NOT_FOUND("101","数据未找到"),
     PARAM_ERROR("102","参数有误"),
-    UNKNOWN_ERROR("105","未知错误");
+    UNKNOWN_ERROR("105","未知错误"),
+    EXPORT_ERROR("202","导出失败");
     private String code;
     private String message;
 

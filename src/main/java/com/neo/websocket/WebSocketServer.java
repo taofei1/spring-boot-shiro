@@ -19,29 +19,29 @@ import org.springframework.stereotype.Component;
 @ServerEndpoint(value = "/websocket")
 @Component
 public class WebSocketServer {
-    //é™æ€å˜é‡ï¼Œç”¨æ¥è®°å½•å½“å‰åœ¨çº¿è¿æ¥æ•°ã€‚åº”è¯¥æŠŠå®ƒè®¾è®¡æˆçº¿ç¨‹å®‰å…¨çš„ã€‚
+    //¾²Ì¬±äÁ¿£¬ÓÃÀ´¼ÇÂ¼µ±Ç°ÔÚÏßÁ¬½ÓÊı¡£Ó¦¸Ã°ÑËüÉè¼Æ³ÉÏß³Ì°²È«µÄ¡£
     private static int onlineCount = 0;
-    //concurrentåŒ…çš„çº¿ç¨‹å®‰å…¨Setï¼Œç”¨æ¥å­˜æ”¾æ¯ä¸ªå®¢æˆ·ç«¯å¯¹åº”çš„MyWebSocketå¯¹è±¡ã€‚
+    //concurrent°üµÄÏß³Ì°²È«Set£¬ÓÃÀ´´æ·ÅÃ¿¸ö¿Í»§¶Ë¶ÔÓ¦µÄMyWebSocket¶ÔÏó¡£
    private static CopyOnWriteArraySet<WebSocketServer> webSocketSet = new CopyOnWriteArraySet<WebSocketServer>();
 
-    //ä¸æŸä¸ªå®¢æˆ·ç«¯çš„è¿æ¥ä¼šè¯ï¼Œéœ€è¦é€šè¿‡å®ƒæ¥ç»™å®¢æˆ·ç«¯å‘é€æ•°æ®
+    //ÓëÄ³¸ö¿Í»§¶ËµÄÁ¬½Ó»á»°£¬ĞèÒªÍ¨¹ıËüÀ´¸ø¿Í»§¶Ë·¢ËÍÊı¾İ
     private Session session;
 
     /**
-     * è¿æ¥å»ºç«‹æˆåŠŸè°ƒç”¨çš„æ–¹æ³•*/
+     * Á¬½Ó½¨Á¢³É¹¦µ÷ÓÃµÄ·½·¨*/
     @OnOpen
     public void onOpen(Session session) {
         this.session = session;
-        webSocketSet.add(this);     //åŠ å…¥setä¸­
-        addOnlineCount();           //åœ¨çº¿æ•°åŠ 1
-        log.info("æœ‰æ–°è¿æ¥åŠ å…¥ï¼å½“å‰åœ¨çº¿äººæ•°ä¸º" + getOnlineCount());
+        webSocketSet.add(this);     //¼ÓÈësetÖĞ
+        addOnlineCount();           //ÔÚÏßÊı¼Ó1
+        log.info("ÓĞĞÂÁ¬½Ó¼ÓÈë£¡µ±Ç°ÔÚÏßÈËÊıÎª" + getOnlineCount());
         try {
-            sendMessage("è¿æ¥æˆåŠŸ");
+            sendMessage("Á¬½Ó³É¹¦");
         } catch (IOException e) {
-            log.error("websocket IOå¼‚å¸¸");
+            log.error("websocket IOÒì³£");
         }
     }
-    //	//è¿æ¥æ‰“å¼€æ—¶æ‰§è¡Œ
+    //	//Á¬½Ó´ò¿ªÊ±Ö´ĞĞ
     //	@OnOpen
     //	public void onOpen(@PathParam("user") String user, Session session) {
     //		currentUser = user;
@@ -49,24 +49,24 @@ public class WebSocketServer {
     //	}
 
     /**
-     * è¿æ¥å…³é—­è°ƒç”¨çš„æ–¹æ³•
+     * Á¬½Ó¹Ø±Õµ÷ÓÃµÄ·½·¨
      */
     @OnClose
     public void onClose() {
-        webSocketSet.remove(this);  //ä»setä¸­åˆ é™¤
-        subOnlineCount();           //åœ¨çº¿æ•°å‡1
-        log.info("æœ‰ä¸€è¿æ¥å…³é—­ï¼å½“å‰åœ¨çº¿äººæ•°ä¸º" + getOnlineCount());
+        webSocketSet.remove(this);  //´ÓsetÖĞÉ¾³ı
+        subOnlineCount();           //ÔÚÏßÊı¼õ1
+        log.info("ÓĞÒ»Á¬½Ó¹Ø±Õ£¡µ±Ç°ÔÚÏßÈËÊıÎª" + getOnlineCount());
     }
 
     /**
-     * æ”¶åˆ°å®¢æˆ·ç«¯æ¶ˆæ¯åè°ƒç”¨çš„æ–¹æ³•
+     * ÊÕµ½¿Í»§¶ËÏûÏ¢ºóµ÷ÓÃµÄ·½·¨
      *
-     * @param message å®¢æˆ·ç«¯å‘é€è¿‡æ¥çš„æ¶ˆæ¯*/
+     * @param message ¿Í»§¶Ë·¢ËÍ¹ıÀ´µÄÏûÏ¢*/
     @OnMessage
     public void onMessage(String message, Session session) {
-        log.info("æ¥è‡ªå®¢æˆ·ç«¯çš„æ¶ˆæ¯:" + message);
+        log.info("À´×Ô¿Í»§¶ËµÄÏûÏ¢:" + message);
 
-        //ç¾¤å‘æ¶ˆæ¯
+        //Èº·¢ÏûÏ¢
         for (WebSocketServer item : webSocketSet) {
             try {
                 item.sendMessage(message);
@@ -83,7 +83,7 @@ public class WebSocketServer {
      */
     @OnError
     public void onError(Session session, Throwable error) {
-        log.error("å‘ç”Ÿé”™è¯¯");
+        log.error("·¢Éú´íÎó");
         error.printStackTrace();
     }
 
@@ -94,7 +94,7 @@ public class WebSocketServer {
 
 
     /**
-     * ç¾¤å‘è‡ªå®šä¹‰æ¶ˆæ¯
+     * Èº·¢×Ô¶¨ÒåÏûÏ¢
      * */
     public static void sendInfo(String message) throws IOException {
         log.info(message);

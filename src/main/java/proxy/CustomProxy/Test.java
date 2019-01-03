@@ -1,7 +1,7 @@
 package proxy.CustomProxy;
 
-import java.io.IOException;
-import java.lang.reflect.Field;
+import proxy.CustomProxy.jdkProxy.CustomProxy;
+import proxy.CustomProxy.jdkProxy.MyHandler;
 
 public class Test {
 

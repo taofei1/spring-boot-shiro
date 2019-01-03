@@ -1,4 +1,6 @@
-package proxy.CustomProxy;
+package proxy.CustomProxy.jdkProxy;
+
+import proxy.CustomProxy.HelloService;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;

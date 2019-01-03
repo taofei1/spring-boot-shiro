@@ -262,6 +262,8 @@
 			<artifactId>snakeyaml</artifactId>
 			<version>1.23</version>
 		</dependency>
+		<!-- https://mvnrepository.com/artifact/org.ow2.asm/asm -->
+
 
 	</dependencies>
 

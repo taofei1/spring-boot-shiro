@@ -1,7 +1,4 @@
 package com.neo.web;
-
-
-
 import com.neo.DTO.MailConfigDTO;
 import com.neo.annotation.Log;
 import com.neo.entity.Dept;
@@ -15,6 +12,7 @@ import com.neo.service.UserInfoService;
 import com.neo.util.Dto2Entity;
 import com.neo.util.Msg;
 import com.neo.util.Util;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.poi.ss.formula.functions.T;
 import org.apache.shiro.SecurityUtils;
 import org.apache.shiro.subject.Subject;
@@ -32,12 +30,9 @@ import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
 import java.util.*;
-
-
 @Controller
-
+@Slf4j
 public class UserInfoController {
-    Logger log= LoggerFactory.getLogger(this.getClass());
     @Autowired
     private UserInfoService userInfoService;
     @Autowired
