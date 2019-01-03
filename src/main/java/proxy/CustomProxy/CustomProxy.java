@@ -1,16 +1,8 @@
 package proxy.CustomProxy;
-
-import proxy.CustomProxy.DynamicJavac.ClassUtil;
 import proxy.CustomProxy.DynamicJavac.DynamicCompile;
-
 import java.io.*;
 import java.lang.reflect.Constructor;
-import java.lang.reflect.Field;
 import java.lang.reflect.Method;
-import java.lang.reflect.Parameter;
-import java.util.ArrayList;
-import java.util.List;
-
 public class CustomProxy {
     public static Object getProxy(Class clazz,CustomHandler customHandler) throws Exception {
         String pname=clazz.getSimpleName();
@@ -30,11 +22,6 @@ public class CustomProxy {
         //所有自己声明的方法
         Method[] methods=clazz.getDeclaredMethods();
         for(Method method:methods){
-            String modify;
-            switch (method.getModifiers()){
-                case 1: modify="public";
-                case 2: modify="protected";
-            }
             String returnS=method.getReturnType().getName();
             Class[] params=method.getParameterTypes();
             methodContent+=line+tab+"public "+returnS+" "+method.getName()+"(" ;
@@ -43,7 +30,7 @@ public class CustomProxy {
             for (int i = 0; i < params.length; i++) {
                 methodContent+=params[i].getName()+" o"+i;
                 objectArray+="o"+i;
-                classArray+=params[i];
+                classArray+=params[i].getName()+".class";
                 if(i!=params.length-1){
                     methodContent+=",";objectArray+=",";classArray+=",";
 
@@ -53,19 +40,19 @@ public class CustomProxy {
             classArray+="};";
             objectArray+="};";
                    methodContent+= "){"
-                    +line+tab+tab+"try{"+line+tab+tab;
+                    +line+tab+tab+"try{"+line+tab+tab+tab;
                    if(params.length>0){
                        methodContent+=objectArray+line;
-                       methodContent+=classArray;
+                       methodContent+=tab+tab+tab+classArray;
                    }
                     if(returnS!="void"){
-                        methodContent+="return ("+returnS+")";
+                        methodContent+=line+tab+tab+tab+"return ("+returnS+")";
                     }
-                    methodContent+="target.invoke(this,"+clazz.getName()+".class.getMethod(\""+method.getName();
+                    methodContent+="target.invoke(this,"+clazz.getName()+".class.getMethod(\""+method.getName()+"\"";
                     if(params.length>0){
                         methodContent+=",c";
                     }
-                    methodContent+="\"),";
+                    methodContent+="),";
 
                     if(params.length==0){
                         methodContent+="(Object[])null);";
@@ -74,16 +61,18 @@ public class CustomProxy {
                         methodContent+="arry);";
                     }
                     methodContent+=line+tab+tab+"} catch (RuntimeException | Error var2) {"
-                    +line+tab+tab+"throw var2;"+line
+                    +line+tab+tab+tab+"throw var2;"+line
                     +tab+tab+"} catch (Throwable var3) {"+line
-                    +"throw new UndeclaredThrowableException(var3);}"
+                    +tab+tab+tab+"throw new UndeclaredThrowableException(var3);"
+                    +line+tab+tab+"}"
                     +line+tab+"}";
 
 
         }
         contentClz+=packageName+clazzContent+constructor+methodContent
                 +line+"}";
-        File out=new File("G:\\javaProject\\spring-boot-shiro\\src\\main\\java\\proxy\\CustomProxy\\$Proxy.java");
+        String projectPath=System.getProperty("user.dir");
+        File out=new File(projectPath+"\\src\\main\\java\\proxy\\CustomProxy\\$Proxy.java");
         FileWriter writer =new FileWriter(out);
         writer.write(contentClz);
         writer.flush();

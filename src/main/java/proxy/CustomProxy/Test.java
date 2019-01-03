@@ -5,10 +5,10 @@ import java.lang.reflect.Field;
 
 public class Test {
 
-    public static void main(String[] args) throws ClassNotFoundException {
-        //HelloService helloService= (HelloService) CustomProxy.getProxy(HelloService.class,new MyHandler(new HelloServiceImpl()) );
+    public static void main(String[] args) throws Exception {
+        HelloService helloService= (HelloService) CustomProxy.getProxy(HelloService.class,new MyHandler(new HelloServiceImpl()) );
       // HelloService helloService=new $Proxy(new MyHandler(new HelloServiceImpl()));
-     //   System.out.println(helloService.ss("ÄãºÃ",00));
+        System.out.println(helloService.ss("ÄãºÃ",00));
 
        // System.out.println(c.getModifiers());
  /*      HelloService helloService=new $Proxy(new HelloServiceImpl());
