@@ -14,7 +14,6 @@ public class RequestUtil {
     private static final Logger log= LoggerFactory.getLogger(RequestUtil.class);
     public static String getIP(HttpServletRequest request){
             String ip = request.getHeader("X-Forwarded-For");
-            log.info("ipInfo:{}",ip);
             if(!StringUtils.isEmpty(ip) && !"unKnown".equalsIgnoreCase(ip)){
                 //多次反向代理后会有多个ip值，第一个ip才是真实ip
                 int index = ip.indexOf(",");

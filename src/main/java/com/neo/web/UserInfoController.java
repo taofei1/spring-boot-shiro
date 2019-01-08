@@ -1,34 +1,42 @@
 package com.neo.web;
 import com.neo.DTO.MailConfigDTO;
 import com.neo.annotation.Log;
+import com.neo.config.GlobalConfig;
 import com.neo.entity.Dept;
 import com.neo.entity.UserInfo;
 import com.neo.enums.OperateType;
+import com.neo.exception.BusinessException;
 import com.neo.exception.ErrorEnum;
 import com.neo.service.DeptService;
 import com.neo.service.EmailService;
 import com.neo.service.RoleService;
 import com.neo.service.UserInfoService;
-import com.neo.util.Dto2Entity;
-import com.neo.util.Msg;
-import com.neo.util.Util;
+import com.neo.util.*;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.poi.ss.formula.functions.T;
 import org.apache.shiro.SecurityUtils;
 import org.apache.shiro.subject.Subject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Controller;
 
 
+import org.springframework.ui.ModelMap;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.ObjectError;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 
+import javax.mail.Multipart;
+import javax.servlet.http.HttpServletRequest;
 import javax.validation.Valid;
+import java.io.File;
+import java.io.IOException;
 import java.util.*;
 @Controller
 @Slf4j
@@ -41,10 +49,12 @@ public class UserInfoController {
     private RoleService roleService;
     @Autowired
     private EmailService emailService;
+    @Autowired
+    private ApplicationEventPublisher publisher;
+
     @GetMapping("/userList/{pageNum}")
     @ResponseBody
     public Page<UserInfo> userList(@PathVariable("pageNum") int pageNum,@RequestParam("pageSize") int pageSize,@RequestParam(value = "sortName",required = false) String sortName,@RequestParam(value = "type",required = false) Integer type,UserInfo user)  {
-
              Page<UserInfo> page;
             if(Util.isNull(user)) {
                page = userInfoService.findAll(pageNum, pageSize, sortName, type);
@@ -86,17 +96,24 @@ public class UserInfoController {
             user.setSalt(uuid);
             user.setPassword(savePwd);
             user.setIsFirst(0);
-            Runnable runnable=  () -> emailService.sendHtmlEmail(user.getEmail(),"密码提示","<p style='font:20px;font-weight:bold;'>您的登陆名是：<span style='color:red'>"+user.getUsername()+"</span>或者当前邮箱,密码是：<span style='color:red'>"+randomPassword+"</span>,首次登陆请修改密码！</p>");
-            Thread thread=new Thread(runnable);
-            thread.start();
+            user.setAvatar("");
+            userInfoService.save(user);
+            UserInfo copy = new UserInfo();
+            BeanUtils.copyProperties(user, copy);
+            copy.setPassword(randomPassword);
+            publisher.publishEvent(copy);
+//            Runnable runnable=  () -> emailService.sendHtmlEmail(user.getEmail(),"密码提示","<p style='font:20px;font-weight:bold;'>您的登陆名是：<span style='color:red'>"+user.getUsername()+"</span>或者当前邮箱,密码是：<span style='color:red'>"+randomPassword+"</span>,首次登陆请修改密码！</p>");
+            //         Thread thread=new Thread(runnable);
+            //      thread.start();
         }else{
             UserInfo userInfo=userInfoService.findById(user.getUid());
             user.setPassword(userInfo.getPassword());
             user.setIsFirst(userInfo.getIsFirst());
             user.setSalt(userInfo.getSalt());
-
+            user.setAvatar(userInfo.getAvatar());
+            userInfoService.save(user);
         }
-        userInfoService.save(user);
+
         return Msg.success();
     }
     @RequestMapping("/deleteUsers")
@@ -208,5 +225,31 @@ public class UserInfoController {
         return Msg.success();
     }
 
+    @GetMapping("/avatar/{id}")
+    public String getAvatar(@PathVariable Integer id, ModelMap map) {
+        map.put("user", userInfoService.findById(id));
+        return "userInfo/avatar";
+    }
 
+    @PostMapping("/avatar/update/{id}")
+    @ResponseBody
+    public Response updateAvatar(@PathVariable Integer id, @RequestParam("avatar") MultipartFile multipartFile) throws BusinessException, IOException {
+        UserInfo ui = userInfoService.findById(id);
+        if (ui == null) {
+            throw new BusinessException(ErrorEnum.DATA_NOT_FOUND, "用户为找到");
+        }
+        if (multipartFile != null) {
+            String name = UUID.randomUUID().toString();
+            log.info("type:{},name:{},original{}", multipartFile.getContentType(),
+                    multipartFile.getName(), multipartFile.getOriginalFilename());
+            String type = multipartFile.getContentType();
+            String sufix = type.substring(type.indexOf("/") + 1);
+            multipartFile.transferTo(new File(GlobalConfig.getAvatarPath() + name + "." + sufix));
+
+            ui.setAvatar(name + "." + sufix);
+            userInfoService.save(ui);
+
+        }
+        return Response.success();
+    }
 }

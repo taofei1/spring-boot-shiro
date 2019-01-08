@@ -10,6 +10,11 @@
 	
 	<link rel="stylesheet" th:href="@{/common/css/sccl.css}">
 	<link rel="stylesheet" type="text/css" th:href="@{/common/skin/qingxin/skin.css}" id="layout-skin"/>
+	  <style>
+		  .img-circle {
+			  border-radius: 50%
+		  }
+	  </style>
 	  <script th:src="@{/layui/layui.js}"></script>
   </head>
   
@@ -19,13 +24,19 @@
 			<span class="header-logo">系统框架</span> 
 			<a class="header-menu-btn" href="javascript:;"><i class="icon-font">&#xe600;</i></a>
 			<ul class="header-bar">
-				<li class="header-bar-role"><a th:text="${userInfo.name}"></a></li>
-				<li class="header-bar-nav">
-					<a th:text="${userInfo.username}"><i class="icon-font" style="margin-left:5px;">&#xe60c;</i></a>
+				<li class="header-bar-nav"><img
+						th:src="(${userInfo.avatar} == '') ? @{/images/1.jpg} : @{/profile/avatar/} + ${userInfo.avatar}"
+						alt="image" class="img-circle" height="40" width="40"/>
 					<ul class="header-dropdown-menu">
+						<li><a href="javascript:personalInfo();">个人信息</a></li>
 						<li><a href="javascript:modifyModal();">修改密码</a></li>
+						<li><a href="javascript:modifyAvatar();">修改头像</a></li>
 						<li><a href="/logout">退出</a></li>
 					</ul>
+				</li>
+				<li class="header-bar-nav">
+					<a th:text="${userInfo.username}"><i class="icon-font" style="margin-left:5px;">&#xe60c;</i></a>
+
 				</li>
 				<li class="header-bar-nav"> 
 					<a href="javascript:;" title="换肤"><i class="icon-font">&#xe608;</i></a>
@@ -67,7 +78,7 @@
 	<script type="text/javascript" th:src="@{/common/js/sccl-util.js}"></script>
     <script th:inline="javascript">
  		var isFirst=[[${isFirst}]];
-		console.log(isFirst);
+        var id = [[${userInfo.uid}]]
  		if(isFirst==0){
             layui.use('layer', function() {
                 var layer = layui.layer;
@@ -89,6 +100,38 @@
                     btn:[]
                 })
 
+            });
+        }
+
+        function personalInfo() {
+            layui.use('layer', function () {
+                var layer = layui.layer;
+                layer.open({
+                    type: 2,
+                    title: '编辑用户'
+                    , content: '/form1?uid=' + id,
+                    area: ['800px', '500px'],
+                    btn: []
+                })
+
+            });
+        }
+
+        function modifyAvatar() {
+            layui.use('layer', function () {
+                var layer = layui.layer;
+                layer.open({
+                    type: 2,
+                    title: '编辑用户'
+                    , content: '/avatar/' + id,
+                    area: ['800px', '550px'],
+                    btn: ['确定', '关闭'],
+                    yes: function (index, layero) {
+                        console.log(layero);
+                        var iframeWin = layero.find('iframe')[0];
+                        iframeWin.contentWindow.submitHandler();
+                    }
+                })
             });
         }
 	</script>

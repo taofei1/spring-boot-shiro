@@ -25,6 +25,7 @@ public class MailConfigController {
         try {
             return Msg.success().addData(MailUtil.getMailConfig());
         } catch (IOException e) {
+            e.printStackTrace();
             return Msg.fail().addData("获取配置信息失败！错误信息："+e.toString());
         }
     }
@@ -37,6 +38,7 @@ public class MailConfigController {
             MailUtil.setConfig(mailConfig);
             return Msg.success();
         } catch (IOException e) {
+            e.printStackTrace();
             return Msg.fail().addData("设置配置信息失败!错误信息"+e.toString());
         }
 

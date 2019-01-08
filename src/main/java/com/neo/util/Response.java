@@ -12,7 +12,7 @@ public class Response {
     }
     public Response(){}
     public static Response success(){
-        return new Response("00","æ“ä½œæˆåŠŸï¼");
+        return new Response("00", "²Ù×÷³É¹¦£¡");
     }
     public static Response fail(ErrorEnum e){
         return new Response(e.getCode(),e.getMessage());

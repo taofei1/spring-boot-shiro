@@ -13,8 +13,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.cache.CacheManager;
 import org.springframework.cache.annotation.EnableCaching;
-import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.test.context.junit4.SpringRunner;
+import org.springframework.web.client.RestTemplate;
+
 
 import javax.annotation.Resource;
 import java.util.List;
@@ -29,13 +30,13 @@ public class SpringBootShiroApplicationTests {
 
 	@Autowired
 	private FileInfoService fileInfoService;
-	@Autowired
-	private RedisTemplate redisTemplate;
+
 	@Resource
 	private CacheManager cacheManager;
 	@Autowired
 	private SyncFilePlanService syncFilePlanService;
-	@Test
+
+    @Test
 	public void testFileInfoCache(){
 		SyncFilePlan syncFilePlan=syncFilePlanService.findById(4);
 		fileInfoService.findByFilePathAndSyncFilePlan("12321",syncFilePlan);
@@ -72,8 +73,8 @@ public class SpringBootShiroApplicationTests {
 	}
 	@Test
 	public void testRedis(){
-		redisTemplate.opsForValue().set("user",new Car("112","22"));
-	}
+        //	redisTemplate.opsForValue().set("user",new Car("112","22"));
+    }
 
 
 	@Test

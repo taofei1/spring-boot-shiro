@@ -28,6 +28,8 @@ public class UserInfo implements Serializable {
     private String emailPassword;
     private String emailHost;
     private String emailPort;
+    @Column(name = "avatar")
+    private String avatar;
   //  @NotBlank(message = "{user.email.notBlank}")
   //  @Email(message = "{user.name.errorPattern}")
     private String name;//名称（昵称或者真实姓名，不同系统不同定义）
@@ -201,6 +203,14 @@ public class UserInfo implements Serializable {
 
     public void setUpdateTime(Date updateTime) {
         this.updateTime = updateTime;
+    }
+
+    public String getAvatar() {
+        return avatar;
+    }
+
+    public void setAvatar(String avatar) {
+        this.avatar = avatar;
     }
 
     /**

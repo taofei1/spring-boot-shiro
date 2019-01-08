@@ -44,7 +44,8 @@ public class HomeController {
     @RequestMapping({"/","/index"})
     public String index(HttpServletRequest request,Map<String,Object> map){
         //获取用户信息
-        UserInfo ui=ShiroUtil.getSysUser();
+        UserInfo u = ShiroUtil.getSysUser();
+        UserInfo ui = userInfoService.findById(u.getUid());
         map.put("userInfo",ui);
         LoginLog loginLog=new LoginLog(RequestUtil.getOSInfo(request),RequestUtil.getBrowserInfo(request),RequestUtil.getIP(request),new Date(),RequestUtil.getSessionId(request),ui);
         userLoginLogService.save(loginLog);

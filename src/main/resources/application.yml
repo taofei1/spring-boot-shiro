@@ -59,8 +59,6 @@ spring:
 #      ehcache:
 #        config: classpath:/config/ehcache.xml
     type: redis
-
-
 server:
   tomcat:
     uri-encoding: UTF-8

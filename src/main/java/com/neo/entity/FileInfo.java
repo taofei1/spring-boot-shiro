@@ -105,4 +105,5 @@ public class FileInfo implements Serializable{
     public void setUpdateTime(Date updateTime) {
         this.updateTime = updateTime;
     }
+
 }
