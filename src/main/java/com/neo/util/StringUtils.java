@@ -436,4 +436,29 @@ public class StringUtils extends org.apache.commons.lang3.StringUtils
         }
         return result.toString();
     }
+
+    /**
+     * 获取字符串前置数字 20 m->20
+     *
+     * @param size
+     * @return
+     */
+    public static Long getPrefixNum(String size) {
+        if (isEmpty(size)) {
+            return null;
+        }
+        StringBuffer sb = new StringBuffer();
+        char[] chars = size.toCharArray();
+        for (int i = 0; i < chars.length; i++) {
+            if (chars[i] >= '0' && chars[i] <= '9') {
+                sb.append(chars[i]);
+            } else {
+                return Long.valueOf(sb.toString());
+            }
+
+        }
+        return Long.valueOf(sb.toString());
+
+
+    }
 }

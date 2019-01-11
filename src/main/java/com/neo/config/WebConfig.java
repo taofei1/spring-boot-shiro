@@ -14,6 +14,7 @@ public class WebConfig extends WebMvcConfigurerAdapter {
          * addResourceLocations：资源绝对路径
          */
         registry.addResourceHandler("/profile/avatar/**").addResourceLocations("file:" + GlobalConfig.getAvatarPath());
+        registry.addResourceHandler("/profile/cloudFile/**").addResourceLocations("file:" + GlobalConfig.getCloudFilePath());
 
     }
 }

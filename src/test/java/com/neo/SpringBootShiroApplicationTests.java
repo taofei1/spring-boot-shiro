@@ -4,9 +4,11 @@ package com.neo;
 import com.neo.entity.SyncFilePlan;
 import com.neo.mapper.GenMapper;
 import com.neo.model.Car;
+import com.neo.pojo.Directory;
 import com.neo.service.FileInfoService;
 import com.neo.service.SyncFilePlanService;
 import lombok.extern.slf4j.Slf4j;
+import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -35,7 +37,6 @@ public class SpringBootShiroApplicationTests {
 	private CacheManager cacheManager;
 	@Autowired
 	private SyncFilePlanService syncFilePlanService;
-
     @Test
 	public void testFileInfoCache(){
 		SyncFilePlan syncFilePlan=syncFilePlanService.findById(4);

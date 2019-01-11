@@ -25,7 +25,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.util.ResourceUtils;
 
 
-@Component    //记得开启，不然启动时不会装载
+@Component
 
 public class EmailServiceImp implements EmailService {
 

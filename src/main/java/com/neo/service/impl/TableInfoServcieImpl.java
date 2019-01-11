@@ -175,6 +175,7 @@ public class TableInfoServcieImpl implements TableInfoService {
             // 渲染模板
             StringWriter sw = new StringWriter();
             Template tpl = Velocity.getTemplate(template, CharsetKit.UTF_8);
+
             //将模板内容渲染进sw中
             tpl.merge(context, sw);
             try

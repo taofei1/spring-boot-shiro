@@ -111,7 +111,8 @@ pagehelper:
   reasonable: true
 
 feifei:
-  profile: D:/profile/
+  profile: D:/profile
+  maxSize: 10M
 
 
 

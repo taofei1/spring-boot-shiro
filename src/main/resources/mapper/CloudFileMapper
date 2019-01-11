@@ -1,0 +1,125 @@
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.neo.mapper.CloudFileMapper">
+    <resultMap id="result" type="CloudFile">
+        <id column="file_id" property="fileId"></id>
+        <result property="file_name" column="fileName"></result>
+        <result property="file_path" column="filePath"></result>
+        <result property="size" column="size"></result>
+        <result property="content_type" column="contentType"></result>
+        <result property="model" column="model"></result>
+        <result property="suffix" column="suffix"></result>
+        <result property="is_trash" column="isTrash"></result>
+        <result property="is_share" column="isShare"></result>
+        <result property="user_id" column="userId"></result>
+        <result property="file_order" column="fileOrder"></result>
+        <result property="is_directory" column="isDirectory"></result>
+        <result property="parent_id" column="parentId"></result>
+        <result property="create_time" column="createTime"></result>
+        <result property="update_time" column="updateTime"></result>
+
+    </resultMap>
+    <sql id="select">
+        select * from cloud_file
+    </sql>
+    <!--查询全部页面文件，先按照文件夹->文件排序，然后文件夹和文件各自再按照order字段排序-->
+    <select id="selectAllCurrentPage" resultMap="result" parameterType="CloudFile">
+        <include refid="select"/>
+        where parent_id=#{fileId} and is_trash='0'
+        <if test="userId!=null">
+            and user_id=#{userId}
+        </if>
+        <if test="fileName!=null">
+            and file_name LIKE concat(concat('%',#{fileName}),'%')
+        </if>
+        order by is_directory desc ,file_order desc
+    </select>
+    <!--查询共享的文件和文件夹-->
+    <select id="selectAllShares" resultMap="result">
+        <include refid="select"/>
+        where is_trash='0'
+        order by is_directory desc,update_time desc
+    </select>
+    <!--查询个人当前页面的最大文件或者文件夹的最大id-->
+    <select id="selectMaxIndexCurrentPage" resultType="Long">
+       select max(file_order) maxIndex where parent_id=#{fileId} and user_id=#{userId}
+       and is_directory=#{isDirectory}
+    </select>
+    <!--根据文件后缀给文件分类，如果有查询就执行查询-->
+    <select id="selectCateGory" resultMap="result">
+        <include refid="select"/>
+        <where>
+            user_id=#{user_id} AND is_trash='0' AND is_directory='0' AND
+            <foreach collection="types" index="index" item="type" open="("
+                     separator="or" close=")">
+                suffx like concat(concat('%',#{type}),'%')
+            </foreach>
+            <if test="fileName!=null and fileName!=''">
+                and file_name LIKE #{fileName}
+            </if>
+            ORDER BY file_order DESC
+        </where>
+    </select>
+    <!--查询个人的可见垃圾，如果有搜索按文件名搜索，然后排序-->
+    <select id="selectSeeTrash" resultMap="result">
+        <include refid="select"/>
+        WHERE user_id=#{user_id} AND is_trash='1'
+        <if test="fileName!=null and fileName!=''">
+            and file_name LIKE concat(concat('%',#{fileName}),'%')
+        </if>
+        order BY is_directory desc,update_time desc
+    </select>
+    <insert id="insertOne" parameterType="CloudFile">
+        INSERT INTO cloud_file (`file_name`,`file_path`,`size`,
+        `content_type`,`model`,`suffix`,`is_trash`,`is_share`,`user_id`
+        ,`file_order`,`is_directory`,`parent_id`)VALUES
+        (#{fileName},#{filePath},#{size},#{contentType},#{model},#{suffix}
+        ,#{isTrash},#{isShare},#{userId},#{fileOrder},#{isDirectory},#{parentId})
+    </insert>
+    <update id="updateOne" parameterType="CloudFile">
+        UPDATE cloud_file
+        <set>
+            <if test="fileName!=null and fileName!=''">
+                AND file_name=#{fileName}
+            </if>
+
+            <if test="suffix!=null and suffix!=''">
+                AND suffix=#{suffix}
+            </if>
+            <if test="isTrash!=null">
+                AND is_trash=#{isTrash}
+            </if>
+            <if test="isShare!=null">
+                AND is_share=#{isShare}
+            </if>
+            <if test="fileOrder!=null">
+                AND file_order=#{fileOrder}
+            </if>
+            <if test="parentId!=null">
+                AND parent_id=#{parentId}
+            </if>
+
+        </set>
+        WHERE file_id=#{fileId}
+    </update>
+    <delete id="deleteOne">
+        delete FROM cloud_file WHERE file_id=#{id}
+    </delete>
+    <delete id="deleteBatch">
+        delete FROM cloud_file WHERE file_id IN
+        <foreach collection="ids" item="id" open="(" close=")" separator=",">
+            #{id}
+        </foreach>
+    </delete>
+    <!--通过个人查询所有文件-->
+    <select id="selectAllByUserIdAndParentId">
+        <include refid="select"/>
+        where user_id=#{userId} and parent_id=#{parentId} and is_trash=#{isTrash}
+
+    </select>
+    <select id="selectByFileId" resultMap="result">
+        <include refid="select"/>
+        where file_id=#{fileId}
+    </select>
+</mapper>

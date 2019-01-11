@@ -11,6 +11,7 @@
     <file url="file://$PROJECT_DIR$/src/main/java/com/neo/listener/EventListener.java" charset="GBK" />
     <file url="file://$PROJECT_DIR$/src/main/java/com/neo/quartz/Monitor.java" charset="GBK" />
     <file url="file://$PROJECT_DIR$/src/main/java/com/neo/sync/SyncFile1.java" charset="GBK" />
+    <file url="file://$PROJECT_DIR$/src/main/java/com/neo/sync/SyncFile2.java" charset="GBK" />
     <file url="file://$PROJECT_DIR$/src/main/java/com/neo/task/TaskUtils.java" charset="GBK" />
     <file url="file://$PROJECT_DIR$/src/main/java/com/neo/testSwagger/TestController.java" charset="GBK" />
     <file url="file://$PROJECT_DIR$/src/main/java/com/neo/thread/CustomThreadPoolExecutor.java" charset="GBK" />
@@ -38,6 +39,7 @@
     <file url="file://$PROJECT_DIR$/src/main/resources/sql/springboot-shiro.sql" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/src/main/resources/static/cropbox/cropbox.css" charset="GBK" />
     <file url="file://$PROJECT_DIR$/src/main/resources/static/cropbox/cropbox.js" charset="GBK" />
+    <file url="file://$PROJECT_DIR$/src/main/resources/static/fileimg" charset="GBK" />
     <file url="file://$PROJECT_DIR$/src/main/resources/static/images/1.jpg" charset="GBK" />
     <file url="file://$PROJECT_DIR$/src/main/resources/static/js/common.js" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/src/test/java/com/neo/Test.java" charset="UTF-8" />

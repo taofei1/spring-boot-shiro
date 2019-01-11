@@ -50,14 +50,40 @@ public enum GlobalConfig {
      * 获取头像上传路径
      */
     public static String getAvatarPath() {
-        return getProfile() + "avatar/";
+        return getProfile() + "/avatar/";
     }
 
     /**
      * 获取下载上传路径
      */
     public static String getDownloadPath() {
-        return getProfile() + "download/";
+        return getProfile() + "/download/";
+    }
+
+    /**
+     * 获取云盘路径
+     *
+     * @return
+     */
+    public static String getCloudFilePath() {
+        return getProfile() + "/cloudFile/";
+    }
+
+    public static Long getMaxFileSizeByte() {
+        String configSize = getConfig("feifei.maxSize").toUpperCase();
+        Long size = StringUtils.getPrefixNum(configSize);
+
+        if (configSize.endsWith("K")) {
+            return size;
+        } else if (configSize.endsWith("KB")) {
+            return size / 1024;
+        } else if (configSize.endsWith("M") || configSize.endsWith("MB")) {
+            return size / (1024 * 1024);
+        } else if (configSize.endsWith("G") || configSize.endsWith("GB")) {
+            return size / (1024 * 1024 * 1024);
+        } else {
+            return 1024 * 1024L;
+        }
     }
 
 
