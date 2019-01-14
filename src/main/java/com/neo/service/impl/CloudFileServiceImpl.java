@@ -17,12 +17,14 @@ import org.springframework.stereotype.Service;
 import org.springframework.util.ObjectUtils;
 import org.springframework.web.multipart.MultipartFile;
 
+
 import javax.transaction.Transactional;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
+
 
 @Service
 @Slf4j
@@ -345,4 +347,6 @@ public class CloudFileServiceImpl implements CloudFileService {
     public Long getCurrentUserId() {
         return ShiroUtil.getSysUser().getUid().longValue();
     }
+
+
 }
