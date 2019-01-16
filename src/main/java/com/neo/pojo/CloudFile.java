@@ -27,7 +27,7 @@ public class CloudFile extends BaseEntity {
     //所属用户
     private Long userId;
     //顺序
-    private Integer fileOrder;
+    private Long fileOrder;
     //是否是目录 0：否 1:是
     private Integer isDirectory;
     //上级目录id

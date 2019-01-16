@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.w3.org/1999/xhtml">
+<input type="hidden" id="loadType" th:value="${loadType}"/>
+<div class="menu">
+    <ul class="nav nav-pills nav-stacked" style="padding:5px 0 5px 0;">
+
+        <li><a class="filereturnback">还原</a></li>
+
+        <li><a class="downloadfile">下载</a></li>
+        <li><a class="downloadfile">下载</a></li>
+        <li><a class="loadokshare">分享</a></li>
+        <li><a class="menurename">重命名</a></li>
+        <li><a onclick="{return confirm('文件将放入回收站，确定删除吗？');};" class="loadtrash">删除</a></li>
+
+        <li><a class="open">打开</a></li>
+        <li><a class="downloadfile">下载</a></li>
+        <li><a class="doshare" href="doshare?pathid=${nowpath.id}&">分享</a></li>
+        <li><a class="movefile">移动到</a></li>
+        <li><a class="copyfile">复制到</a></li>
+        <li><a class="menurename">重命名</a></li>
+        <li><a onclick="{return confirm('文件将放入回收站，确定删除吗？');};" class="delete">删除</a></li>
+    </ul>
+</div>
+<div class="bgc-w box box-primary" style="height: 695px;">
+    <!--盒子头-->
+    <div class="box-header">
+        <a style="font-size: 14px;" th:each="path,pathStat:${parentPaths}" style="cursor:pointer;"
+           th:if="${pathStat.size}>1 and ${pathStat.index} eq ${pathStat.size}-2"
+           th:onclick="'refresh('+${path.fileId}+')'">
+
+            返回上一级 |
+        </a>
+        <h3 class="box-title" style="font-size: 12px;" th:each="path,pathStat:${parentPaths}">
+
+            <a style="font-size: 12px;" th:text="${path.fileName}" style="cursor:pointer;"
+               th:onclick="'refresh('+${path.fileId}+')'">
+            </a>
+            <span th:if="${pathStat.index!=pathStat.size-1}">
+                >
+            </span>
+        </h3>
+
+        <div class="box-tools">
+            <div class="input-group" style="width: 150px;">
+                <input class="form-control input-sm findfileandpath"
+                       placeholder="查找..." id="search" th:value="${searchValue}"/>
+                <div class="input-group-btn">
+                    <a class="btn btn-sm btn-default btn-change findfileandpathgo"><span
+                            class="glyphicon glyphicon-search"></span></a>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!--盒子身体-->
+    <div class="box-body no-padding">
+
+        <div style="padding: 5px;">
+            <a class="btn btn-sm btn-default allcheck"
+               href="javascript:void(0);" title="全选/反选"><span
+                    class="iconfont icon-xuanze1"></span></a>
+            <div class="btn-group">
+
+                <a onclick="{return confirm('文件将放入回收站，确定删除吗？');};" class="btn btn-sm btn-default topdelete"
+                   href="deletefile?pathid=${nowpath.id}&checkpathids=&checkfileids=" title="删除">
+                    <span class="iconfont icon-lajitong"></span>
+                </a>
+                <a onclick="{$('.creatpath').removeClass('diplaynone');};" class="btn btn-sm btn-default topcreatepath"
+                   title="新建文件夹">
+                    <span class="iconfont icon-xinzengwenjian"></span>
+                </a>
+            </div>
+            <a class="btn btn-sm btn-default" href="filemanage" title="刷新"><span
+                    class="iconfont icon-shuaxin"></span></a>
+        </div>
+
+
+        <div class="file-box" style="overflow-y: auto;">
+            <div class="boxcontain" style="height: auto;">
+
+                <!--新建文件夹操作显示部分  -->
+                <div class="file-one creatpath pathtextarea diplaynone" style="width: 144px;">
+                    <div class="file-img">
+                        <img src="/fileimg/Folder.png"/>
+                    </div>
+                    <div class="file-name" style="text-align: left;">
+                        <!--<form action="createpath">-->
+                        <input class="creatpathinput" id="dirName" name="pathname" value="新建文件夹"/>
+                        <input type="hidden" name="parentId" th:value="${parentId}" id="dirParentId"/>
+                        <button class="btn btn-default" id="createDir" onclick="createDir(this)">
+                            <em class="glyphicon glyphicon-ok" style="font-size: 12px; "></em>
+                        </button>
+                        <span class="btn btn-default">
+							<em onclick="{$('.creatpath').addClass('diplaynone');};"
+                                class="glyphicon glyphicon-remove cansalcreate" style="font-size: 12px;"></em>
+						</span>
+                        <!--  </form>-->
+                    </div>
+                    <span class="file-check">
+							<span class="iconfont icon-xuanze" style="height:1.5em;width:1.5em"></span>
+				</span>
+                </div>
+
+
+                <div th:each="cloudFile:${cloudFiles}" th:if="${cloudFile.isDirectory==1}">
+                    <div class="file-one">
+                        <div class="file-img path">
+
+                            <a class="folder" style="cursor:pointer;" th:onclick="'refresh('+${cloudFile.fileId}+')'">
+                                <img src="/fileimg/Folder.png"/>
+                            </a>
+
+                            <a class="folder" style="cursor:pointer;" th:onclick="'refresh('+${cloudFile.fileId}+')'">
+                                <input type="hidden" class="url" th:value="${cloudFile.fileId}"/>
+                                <img src="/fileimg/Folder.png"/>
+                            </a>
+                        </div>
+                        <div class="file-name path">
+                            <div class="filename">
+                                <a style="font-size: 12px;" th:text="${cloudFile.fileName}"></a>
+                            </div>
+
+                            <div class="pathtextarea rename diplaynone"
+                                 style="position: absolute;top: 97px;left: -5px;z-index:100;">
+                                <form action="rename">
+                                    <input class="creatpathinput" type="text" name="name" value="2"/>
+                                    <input type="hidden" name="renamefp" value=""/>
+                                    <input type="hidden" name="pathid" value=""/>
+                                    <input type="hidden" name="isfile" value="false"/>
+                                    <button class="btn btn-default">
+                                        <em class="glyphicon glyphicon-ok" style="font-size: 12px;"></em>
+                                    </button>
+                                    <span class="btn btn-default">
+					<em class="glyphicon glyphicon-remove cansalcreate" style="font-size: 12px;"></em>
+				</span>
+                                </form>
+                            </div>
+                        </div>
+                        <input type="hidden" class="pathmessage" value="${path.id}">
+                        <span class="file-check">
+								<span class="iconfont icon-xuanze" style="height:1.5em;width:1.5em"></span>
+							</span>
+                    </div>
+                </div>
+                <div th:each="cloudFile:${cloudFiles}" th:if="${cloudFile.isDirectory==0}">
+                    <div class="file-one">
+                        <div class="file-img" style="cursor:pointer;">
+                            <img th:if="${cloudFile.suffix=='mp4' or cloudFile.suffix=='rmvb'}"
+                                 src="/fileimg/Video.png"/>
+                            <img th:if="${cloudFile.suffix=='mp3'}" src="/fileimg/PDF.png"/>
+                            <img th:if="${cloudFile.suffix=='pdf'}" src="/fileimg/PDF.png"/>
+                            <img th:if="${cloudFile.suffix=='zip'}" src="/fileimg/ZIP.png"/>
+                            <img th:if="${cloudFile.suffix=='txt'}" src="/fileimg/Text.png"/>
+                            <img th:if="${cloudFile.suffix=='jpg'}" th:src="${cloudFile.filePath}"
+                                 style="width: 100%;height: auto"/>
+                        </div>
+                        <div class="file-name">
+                            <div class="filename">
+                                <a th:text="${cloudFile.fileName}"></a>
+                            </div>
+                            <div class="pathtextarea rename diplaynone"
+                                 style="position: absolute;top: 97px;left: -5px;z-index:100;">
+                                <form action="rename">
+                                    <input class="creatpathinput" type="text" name="name" value="${file.fileName}"/>
+                                    <button class="btn btn-default">
+                                        <em class="glyphicon glyphicon-ok" style="font-size: 12px;"></em>
+                                    </button>
+                                    <span class="btn btn-default">
+				<em class="glyphicon glyphicon-remove cansalcreate" style="font-size: 12px;"></em>
+			</span>
+                                </form>
+                            </div>
+                        </div>
+                        <span class="file-check">
+	<span class="iconfont icon-xuanze" style="height:1.5em;width:1.5em"></span>
+</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+</html>

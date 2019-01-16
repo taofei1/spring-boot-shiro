@@ -2,67 +2,76 @@
         PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.neo.mapper.CloudFileMapper">
-    <resultMap id="result" type="CloudFile">
+    <resultMap id="resultFile" type="CloudFile">
         <id column="file_id" property="fileId"></id>
-        <result property="file_name" column="fileName"></result>
-        <result property="file_path" column="filePath"></result>
-        <result property="size" column="size"></result>
-        <result property="content_type" column="contentType"></result>
-        <result property="model" column="model"></result>
-        <result property="suffix" column="suffix"></result>
-        <result property="is_trash" column="isTrash"></result>
-        <result property="is_share" column="isShare"></result>
-        <result property="user_id" column="userId"></result>
-        <result property="file_order" column="fileOrder"></result>
-        <result property="is_directory" column="isDirectory"></result>
-        <result property="parent_id" column="parentId"></result>
-        <result property="create_time" column="createTime"></result>
-        <result property="update_time" column="updateTime"></result>
+        <result column="file_name" property="fileName"></result>
+        <result column="file_path" property="filePath"></result>
+        <result column="size" property="size"></result>
+        <result column="content_type" property="contentType"></result>
+        <result column="model" property="model"></result>
+        <result column="suffix" property="suffix"></result>
+        <result column="is_trash" property="isTrash"></result>
+        <result column="is_share" property="isShare"></result>
+        <result column="user_id" property="userId"></result>
+        <result column="file_order" property="fileOrder"></result>
+        <result column="is_directory" property="isDirectory"></result>
+        <result column="parent_id" property="parentId"></result>
+        <result column="create_time" property="createTime"></result>
+        <result column="update_time" property="updateTime"></result>
 
     </resultMap>
     <sql id="select">
-        select * from cloud_file
+        select file_id,file_name,file_path,size,content_type,model,suffix,is_trash,is_share,user_id,
+        file_order,is_directory,parent_id,create_time,update_time
+        from cloud_file
     </sql>
     <!--查询全部页面文件，先按照文件夹->文件排序，然后文件夹和文件各自再按照order字段排序-->
-    <select id="selectAllCurrentPage" resultMap="result" parameterType="CloudFile">
+    <select id="selectAllCurrentPage" resultMap="resultFile" parameterType="CloudFile">
         <include refid="select"/>
-        where parent_id=#{fileId} and is_trash='0'
+        where is_trash='0'
+        <if test="fileId!=null">
+            AND parent_id=#{fileId}
+        </if>
         <if test="userId!=null">
             and user_id=#{userId}
         </if>
-        <if test="fileName!=null">
+        <if test="fileName!=null and fileName!=''">
             and file_name LIKE concat(concat('%',#{fileName}),'%')
         </if>
         order by is_directory desc ,file_order desc
     </select>
+    <select id="selectByNameLike" resultType="String">
+      select file_name from cloud_file where
+      user_id=#{userId}  AND parent_id=#{fileId} AND file_name like concat(#{fileName},'%')
+    </select>
     <!--查询共享的文件和文件夹-->
-    <select id="selectAllShares" resultMap="result">
+    <select id="selectAllShares" resultMap="resultFile">
         <include refid="select"/>
         where is_trash='0'
         order by is_directory desc,update_time desc
     </select>
     <!--查询个人当前页面的最大文件或者文件夹的最大id-->
     <select id="selectMaxIndexCurrentPage" resultType="Long">
-       select max(file_order) maxIndex where parent_id=#{fileId} and user_id=#{userId}
+        select max(file_order) maxIndex from cloud_file where parent_id=#{fileId} and user_id=#{userId}
        and is_directory=#{isDirectory}
     </select>
     <!--根据文件后缀给文件分类，如果有查询就执行查询-->
-    <select id="selectCateGory" resultMap="result">
+    <select id="selectCateGory" resultMap="resultFile">
         <include refid="select"/>
         <where>
-            user_id=#{user_id} AND is_trash='0' AND is_directory='0' AND
+            user_id=#{userId} AND is_trash='0' AND is_directory='0' AND
             <foreach collection="types" index="index" item="type" open="("
                      separator="or" close=")">
-                suffx like concat(concat('%',#{type}),'%')
+                suffix like concat(concat('%',#{type}),'%')
             </foreach>
             <if test="fileName!=null and fileName!=''">
-                and file_name LIKE #{fileName}
+                and file_name LIKE concat(concat('%',#{fileName}),'%')
             </if>
             ORDER BY file_order DESC
         </where>
     </select>
     <!--查询个人的可见垃圾，如果有搜索按文件名搜索，然后排序-->
-    <select id="selectSeeTrash" resultMap="result">
+    <select id="selectSeeTrash" resultMap="resultFile">
         <include refid="select"/>
         WHERE user_id=#{user_id} AND is_trash='1'
         <if test="fileName!=null and fileName!=''">
@@ -113,12 +122,12 @@
         </foreach>
     </delete>
     <!--通过个人查询所有文件-->
-    <select id="selectAllByUserIdAndParentId">
+    <select id="selectAllByUserIdAndParentId" resultMap="resultFile">
         <include refid="select"/>
         where user_id=#{userId} and parent_id=#{parentId} and is_trash=#{isTrash}
 
     </select>
-    <select id="selectByFileId" resultMap="result">
+    <select id="selectByFileId" resultMap="resultFile">
         <include refid="select"/>
         where file_id=#{fileId}
     </select>

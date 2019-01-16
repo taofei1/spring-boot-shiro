@@ -22,6 +22,7 @@ import javax.transaction.Transactional;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
 
@@ -33,8 +34,31 @@ public class CloudFileServiceImpl implements CloudFileService {
     private CloudFileMapper cloudFileMapper;
 
     @Override
+    public CloudFile selectByFileId(Long id) {
+        return cloudFileMapper.selectByFileId(id);
+    }
+
+    @Override
+    public List<CloudFile> getAllParentPaths(Long id) throws BusinessException {
+        CloudFile cloudFile = cloudFileMapper.selectByFileId(id);
+        if (StringUtils.isNull(cloudFile)) {
+            throw new BusinessException(ErrorEnum.DATA_NOT_FOUND, "id=" + id + "µÄÎÄ¼ş»òÎÄ¼ş¼ĞÎ´ÕÒµ½");
+        }
+
+        List<CloudFile> cloudFiles = new ArrayList<>();
+        cloudFiles.add(cloudFile);
+        while (cloudFile.getFileId() != 1L && cloudFile.getParentId() != 0) {
+            cloudFile = cloudFileMapper.selectByFileId(cloudFile.getParentId());
+            cloudFiles.add(cloudFile);
+        }
+        Collections.reverse(cloudFiles);
+        return cloudFiles;
+
+    }
+
+    @Override
     public List<CloudFile> selectPersonalOrShareAndNameLike(CloudFile cloudFile) throws BusinessException {
-        if (ObjectUtils.isEmpty(cloudFile) || cloudFile.getFileId() == null) {
+        if (ObjectUtils.isEmpty(cloudFile)) {
             throw new BusinessException(ErrorEnum.PARAM_ERROR);
         }
         //cloudFile.setUserId(getCurrentUserId());
@@ -44,7 +68,7 @@ public class CloudFileServiceImpl implements CloudFileService {
     @Override
     public List<CloudFile> getCateGoryFileAndNameLike(String cateGory, String fileName) throws BusinessException {
         List<String> fileSuffix;
-        switch (cateGory) {
+        switch (cateGory.toLowerCase()) {
             case "image":
                 fileSuffix = Suffix.IMAGE.getSuffix();
                 break;
@@ -61,7 +85,7 @@ public class CloudFileServiceImpl implements CloudFileService {
                 fileSuffix = Suffix.ZIP.getSuffix();
                 break;
             default:
-                throw new BusinessException(ErrorEnum.PARAM_ERROR, "æ–‡ä»¶åˆ†ç±»ä¸å­˜åœ¨ï¼");
+                throw new BusinessException(ErrorEnum.PARAM_ERROR, "ÎÄ¼ş·ÖÀà²»´æÔÚ£¡:" + cateGory);
         }
         return cloudFileMapper.selectCateGory(getCurrentUserId(), fileSuffix, fileName);
 
@@ -80,17 +104,14 @@ public class CloudFileServiceImpl implements CloudFileService {
 
     @Override
     public int insertOne(CloudFile cloudFile) throws BusinessException {
-        if (ObjectUtils.isEmpty(cloudFile) || cloudFile.getFileId() == null) {
-            throw new BusinessException(ErrorEnum.PARAM_ERROR);
-        }
         return cloudFileMapper.insertOne(cloudFile);
     }
 
     /**
-     * ä¿®æ”¹æ–‡ä»¶
-     * 1).ä¿®æ”¹åå­—
-     * 2).å˜æˆåƒåœ¾æˆ–ä»åƒåœ¾ç®±å¤åŸï¼Œå¦‚æœæ˜¯æ–‡ä»¶ç›´æ¥æ“ä½œï¼Œå¦‚æœæ˜¯æ–‡ä»¶å¤¹ï¼Œéå†å­æ–‡ä»¶å¹¶è¿›è¡Œæ“ä½œ
-     * 3).å…±äº«å’Œå–æ¶ˆå…±äº«ï¼Œé€»è¾‘åŒä¸Š
+     * ĞŞ¸ÄÎÄ¼ş
+     * 1).ĞŞ¸ÄÃû×Ö
+     * 2).±ä³ÉÀ¬»ø»ò´ÓÀ¬»øÏä¸´Ô­£¬Èç¹ûÊÇÎÄ¼şÖ±½Ó²Ù×÷£¬Èç¹ûÊÇÎÄ¼ş¼Ğ£¬±éÀú×ÓÎÄ¼ş²¢½øĞĞ²Ù×÷
+     * 3).¹²ÏíºÍÈ¡Ïû¹²Ïí£¬Âß¼­Í¬ÉÏ
      *
      * @param id
      * @param fileOperType
@@ -102,13 +123,10 @@ public class CloudFileServiceImpl implements CloudFileService {
     public int updateOne(Long id, FileOperType fileOperType) throws BusinessException {
         CloudFile cf = cloudFileMapper.selectByFileId(id);
         checkAccess(cf);
-        //è¿˜åŸçš„æ—¶å€™éœ€è¦æ£€æµ‹åŸç›®å½•æ˜¯å¦æœ‰é‡åæ–‡ä»¶
+        //»¹Ô­µÄÊ±ºòĞèÒª¼ì²âÔ­Ä¿Â¼ÊÇ·ñÓĞÖØÃûÎÄ¼ş
         if (fileOperType == FileOperType.RESTORE) {
-            List<CloudFile> cls = cloudFileMapper.selectAllByUserIdAndParentId(getCurrentUserId(), cf.getParentId(), 0);
-            for (CloudFile cloudFile1 : cls) {
-                if (cloudFile1.getFileName().equals(cf.getFileName())) {
-                    throw new BusinessException(ErrorEnum.DUPLICATE_FILENAME);
-                }
+            if (!nameCanUse(cf.getFileName(), cf.getParentId())) {
+                throw new BusinessException(ErrorEnum.DUPLICATE_FILENAME);
             }
         }
         doUpdateFileByOperType(cf, fileOperType, true);
@@ -122,13 +140,13 @@ public class CloudFileServiceImpl implements CloudFileService {
             return;
         }
         if (parentDirectoryId == null) {
-            throw new BusinessException(ErrorEnum.PARAM_ERROR, "ç¼ºå°‘æ–‡ä»¶çˆ¶ç›®å½•ID");
+            throw new BusinessException(ErrorEnum.PARAM_ERROR, "È±ÉÙÎÄ¼ş¸¸Ä¿Â¼ID");
         }
         Long size = multipartFile.getSize();
         if (size > GlobalConfig.getMaxFileSizeByte()) {
             throw new BusinessException(ErrorEnum.FILE_TO_LARGE);
         }
-        String suffix = FilenameUtils.getExtension(multipartFile.getOriginalFilename());
+        String suffix = FilenameUtils.getExtension(multipartFile.getOriginalFilename()).toLowerCase();
         String uploadPath = GlobalConfig.getCloudFilePath();
         String newFileName = UUID.randomUUID().toString().toLowerCase() + "." + suffix;
         File targetFile = new File(uploadPath, newFileName);
@@ -155,13 +173,10 @@ public class CloudFileServiceImpl implements CloudFileService {
 
         CloudFile parent = cloudFileMapper.selectByFileId(cl.getParentId());
         parent.setFileName(null);
-        //åˆ¤æ–­å½“å‰ç›®å½•ä¸‹æ˜¯å¦æœ‰åŒåæ–‡ä»¶
+        //ÅĞ¶Ïµ±Ç°Ä¿Â¼ÏÂÊÇ·ñÓĞÍ¬ÃûÎÄ¼ş
 
-        List<CloudFile> cloudFiles = cloudFileMapper.selectAllCurrentPage(parent);
-        for (CloudFile c : cloudFiles) {
-            if (c.getFileName().equals(fileName)) {
-                throw new BusinessException(ErrorEnum.DUPLICATE_FILENAME);
-            }
+        if (!nameCanUse(fileName, parent.getFileId())) {
+            throw new BusinessException(ErrorEnum.DUPLICATE_FILENAME);
         }
         cl.setFileName(fileName);
         String extension = FilenameUtils.getExtension(fileName);
@@ -174,10 +189,10 @@ public class CloudFileServiceImpl implements CloudFileService {
     public List<CloudFile> selectShareFirstPage(String searchName) {
         List<CloudFile> cloudFiles = cloudFileMapper.selectAllShares();
         List<CloudFile> firstPage = new ArrayList<>();
-        //å½“fileæ²¡æœ‰çˆ¶ç›®å½•æˆ–è€…çˆ¶ç›®å½•æ²¡æœ‰å…±äº«çš„æ—¶å€™å°±åœ¨ç¬¬ä¸€é¡µæ˜¾ç¤º
+        //µ±fileÃ»ÓĞ¸¸Ä¿Â¼»òÕß¸¸Ä¿Â¼Ã»ÓĞ¹²ÏíµÄÊ±ºò¾ÍÔÚµÚÒ»Ò³ÏÔÊ¾
         cloudFiles.forEach(cloudFile -> {
             if (cloudFile.getParentId() == 0 || cloudFileMapper.selectByFileId(cloudFile.getParentId()).getIsShare() == 0L) {
-                //å…±äº«é¦–é¡µæœç´¢
+                //¹²ÏíÊ×Ò³ËÑË÷
                 if (StringUtils.isEmpty(searchName) || cloudFile.getFileName().contains(searchName)) {
                     firstPage.add(cloudFile);
                 }
@@ -187,8 +202,8 @@ public class CloudFileServiceImpl implements CloudFileService {
     }
 
     /**
-     * ç§»åŠ¨æ–‡ä»¶
-     * ç§»åŠ¨åˆ°çš„æ–‡ä»¶å¤¹ä¸‹ä¸èƒ½æœ‰åŒåæ–‡ä»¶
+     * ÒÆ¶¯ÎÄ¼ş
+     * ÒÆ¶¯µ½µÄÎÄ¼ş¼ĞÏÂ²»ÄÜÓĞÍ¬ÃûÎÄ¼ş
      *
      * @param fileId
      * @param newParentId
@@ -215,6 +230,21 @@ public class CloudFileServiceImpl implements CloudFileService {
     }
 
     @Override
+    public boolean nameCanUse(String name, Long parentId) throws BusinessException {
+        CloudFile cl = cloudFileMapper.selectByFileId(parentId);
+        checkAccess(cl);
+        List<CloudFile> cls = cloudFileMapper.selectAllByUserIdAndParentId(getCurrentUserId(), parentId, 0);
+        for (CloudFile cloudFile1 : cls) {
+            if (cloudFile1.getFileName().equals(name)) {
+                return false;
+            }
+        }
+        return true;
+
+
+    }
+
+    @Override
     public void deleteBatch(List<Long> ids) throws BusinessException {
         for (Long id : ids) {
             CloudFile cloudFile = cloudFileMapper.selectByFileId(id);
@@ -227,7 +257,7 @@ public class CloudFileServiceImpl implements CloudFileService {
     }
 
     /**
-     * å›æ”¶ç«™å½»åº•åˆ é™¤
+     * »ØÊÕÕ¾³¹µ×É¾³ı
      *
      * @param fileId
      * @return
@@ -237,14 +267,14 @@ public class CloudFileServiceImpl implements CloudFileService {
     public void deleteOne(Long fileId) throws BusinessException {
         CloudFile cl = cloudFileMapper.selectByFileId(fileId);
         checkAccess(cl);
-        //å¦‚æœæ˜¯æ–‡ä»¶ï¼Œç›´æ¥åˆ é™¤
+        //Èç¹ûÊÇÎÄ¼ş£¬Ö±½ÓÉ¾³ı
         if (cl.getIsDirectory() == 0) {
             int result = cloudFileMapper.deleteOne(fileId);
             if (result < 0) {
-                throw new BusinessException(ErrorEnum.DATABASE_OPER_ERROR, "åˆ é™¤å¤±è´¥ï¼" + cl.getFileName());
+                throw new BusinessException(ErrorEnum.DATABASE_OPER_ERROR, "É¾³ıÊ§°Ü£¡" + cl.getFileName());
             }
         }
-        //å¦‚æœæ˜¯æ–‡ä»¶å¤¹ï¼Œéå†æ‰€æœ‰å­æ–‡ä»¶åˆ é™¤
+        //Èç¹ûÊÇÎÄ¼ş¼Ğ£¬±éÀúËùÓĞ×ÓÎÄ¼şÉ¾³ı
         else {
             traverse(cl, FileOperType.DELETE);
         }
@@ -252,7 +282,7 @@ public class CloudFileServiceImpl implements CloudFileService {
     }
 
     /**
-     * éå†æ–‡ä»¶å¤¹æ ¹æ®é€‰é¡¹è¿›è¡Œæ“ä½œ
+     * ±éÀúÎÄ¼ş¼Ğ¸ù¾İÑ¡Ïî½øĞĞ²Ù×÷
      *
      * @param cloudFile
      * @param type
@@ -312,11 +342,11 @@ public class CloudFileServiceImpl implements CloudFileService {
 
     private void checkAccess(CloudFile cl) throws BusinessException {
         if (StringUtils.isNull(cl)) {
-            throw new BusinessException(ErrorEnum.DATA_NOT_FOUND, "è¦æ“ä½œçš„æ–‡ä»¶ä¸å­˜åœ¨ï¼" + cl.getFileName());
-        } else if (cl.getUserId() != getCurrentUserId()) {
-            throw new BusinessException(ErrorEnum.PARAM_ERROR, "æ— æ³•æ“ä½œéå½“å‰ç”¨æˆ·çš„æ–‡ä»¶ï¼");
+            throw new BusinessException(ErrorEnum.DATA_NOT_FOUND, "Òª²Ù×÷µÄÎÄ¼ş»òÎÄ¼ş¼Ğ²»´æÔÚ£¡" + cl.getFileName());
+        } else if (cl.getUserId() != getCurrentUserId() && cl.getFileId() != 1L) {
+            throw new BusinessException(ErrorEnum.PARAM_ERROR, "ÎŞ·¨²Ù×÷·Çµ±Ç°ÓÃ»§µÄÎÄ¼ş£¡");
         } else if (cl.getIsTrash() != 0) {
-            throw new BusinessException(ErrorEnum.PARAM_ERROR, "å›æ”¶ç«™æ–‡ä»¶æ— æ³•æ“ä½œ!");
+            throw new BusinessException(ErrorEnum.PARAM_ERROR, "»ØÊÕÕ¾ÎÄ¼şÎŞ·¨²Ù×÷!");
         }
     }
 
@@ -325,6 +355,14 @@ public class CloudFileServiceImpl implements CloudFileService {
         if (StringUtils.isNull(parentId) || StringUtils.isEmpty(directoryName)) {
             throw new BusinessException(ErrorEnum.PARAM_ERROR);
         }
+        //Èç¹ûÃû³Æ²»¿ÉÓÃÑ°ÕÒĞÂÃû³Æ:ĞÂ½¨ÎÄ¼ş¼Ğ(num)
+        int num = 1;
+        String srcName = directoryName;
+        while (!nameCanUse(directoryName, parentId)) {
+            directoryName = srcName + "(" + (num++) + ")";
+
+        }
+
         CloudFile cloudFile = new CloudFile();
         cloudFile.setParentId(parentId);
         cloudFile.setFileName(directoryName);
@@ -340,8 +378,13 @@ public class CloudFileServiceImpl implements CloudFileService {
     }
 
 
-    public int getMaxOrderByUserAndIsDirectory(Long parentDirectoryId, Integer isDrectory) {
-        return cloudFileMapper.selectMaxIndexCurrentPage(parentDirectoryId, getCurrentUserId(), isDrectory);
+    public Long getMaxOrderByUserAndIsDirectory(Long parentDirectoryId, Integer isDirectory) {
+        Long maxOrder = cloudFileMapper.selectMaxIndexCurrentPage(parentDirectoryId, getCurrentUserId(), isDirectory);
+        if (maxOrder == null) {
+            return 1L;
+        } else {
+            return maxOrder + 1;
+        }
     }
 
     public Long getCurrentUserId() {

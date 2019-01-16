@@ -1,6 +1,8 @@
 package com.neo.mapper;
 
 import com.neo.pojo.CloudFile;
+
+import org.apache.ibatis.annotations.Param;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
@@ -9,11 +11,13 @@ import java.util.List;
 public interface CloudFileMapper {
     List<CloudFile> selectAllCurrentPage(CloudFile cloudFile);
 
-    int selectMaxIndexCurrentPage(Long fileId, Long userId, Integer isDirectory);
+    List<String> selectByNameLike(@Param("userId") Long userId, @Param("fileId") Long fileId, @Param("fileName") String fileName);
 
-    List<CloudFile> selectCateGory(Long userId, List<String> types, String fileName);
+    Long selectMaxIndexCurrentPage(@Param("fileId") Long fileId, @Param("userId") Long userId, @Param("isDirectory") Integer isDirectory);
 
-    List<CloudFile> selectSeeTrash(Long userId, String fileName);
+    List<CloudFile> selectCateGory(@Param("userId") Long userId, @Param("types") List<String> types, @Param("fileName") String fileName);
+
+    List<CloudFile> selectSeeTrash(@Param("userId") Long userId, @Param("fileName") String fileName);
 
     int insertOne(CloudFile cloudFile);
 
@@ -23,7 +27,7 @@ public interface CloudFileMapper {
 
     int deleteBatch(List<Long> ids);
 
-    List<CloudFile> selectAllByUserIdAndParentId(Long userId, Long parentId, Integer isTrash);
+    List<CloudFile> selectAllByUserIdAndParentId(@Param("userId") Long userId, @Param("parentId") Long parentId, @Param("isTrash") Integer isTrash);
 
     CloudFile selectByFileId(Long fileId);
 

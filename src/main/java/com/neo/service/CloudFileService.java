@@ -9,6 +9,9 @@ import java.io.IOException;
 import java.util.List;
 
 public interface CloudFileService {
+    CloudFile selectByFileId(Long id);
+
+    List<CloudFile> getAllParentPaths(Long id) throws BusinessException;
     List<CloudFile> selectPersonalOrShareAndNameLike(CloudFile cloudFile) throws BusinessException;
 
     List<CloudFile> getCateGoryFileAndNameLike(String cateGory, String fileName) throws BusinessException;
@@ -32,6 +35,8 @@ public interface CloudFileService {
     List<CloudFile> selectShareFirstPage(String searchName);
 
     int moveFile(Long fileId, Long parentId) throws BusinessException;
+
+    boolean nameCanUse(String name, Long parentId) throws BusinessException;
 
     void deleteBatch(List<Long> ids) throws BusinessException;
 
