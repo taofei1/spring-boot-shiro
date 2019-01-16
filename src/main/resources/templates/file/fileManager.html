@@ -27,8 +27,9 @@
         <a style="font-size: 14px;color: #0a6aa1;cursor:pointer;" th:each="path,pathStat:${parentPaths}"
            th:if="${pathStat.size}>1 and ${pathStat.index} eq ${pathStat.size}-2 "
            th:onclick="'refresh('+${path.fileId}+')'">
-            返回上一级 <span style="color: black">|</span>
+            返回上一级
         </a>
+        <span th:if="${parentId!=null and parentId!=1}">&nbsp;|&nbsp;</span>
         <h3 class="box-title" style="font-size: 12px;" th:each="path,pathStat:${parentPaths}">
 
             <a th:if="${pathStat.index!=pathStat.size-1}" style="font-size: 14px;" th:text="${path.fileName}"

@@ -20,6 +20,7 @@ public class SimpleHttpServer {
         }
     }
     public static void main(String[] args) throws Exception {
+        setBasePath("d:/profile/avatar");
         start();
     }
     // 启动SimpleHttpServer

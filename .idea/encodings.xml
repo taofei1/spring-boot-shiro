@@ -2,13 +2,11 @@
 <project version="4">
   <component name="Encoding">
     <file url="file://$PROJECT_DIR$" charset="UTF-8" />
-    <file url="file://$PROJECT_DIR$/src/main/java/cocourrence/chapter4/1.jpg" charset="GBK" />
-    <file url="file://$PROJECT_DIR$/src/main/java/cocourrence/chapter4/2.jpg" charset="GBK" />
-    <file url="file://$PROJECT_DIR$/src/main/java/cocourrence/chapter4/3.jpg" charset="GBK" />
     <file url="file://$PROJECT_DIR$/src/main/java/cocourrence/chapter4/Piped.java" charset="GBK" />
     <file url="file://$PROJECT_DIR$/src/main/java/com/neo/aspect/LogAspect.java" charset="GBK" />
     <file url="file://$PROJECT_DIR$/src/main/java/com/neo/config/MyShiroRealm.java" charset="GBK" />
     <file url="file://$PROJECT_DIR$/src/main/java/com/neo/config/SwaggerConfig.java" charset="GBK" />
+    <file url="file://$PROJECT_DIR$/src/main/java/com/neo/enums/FileType.java" charset="GBK" />
     <file url="file://$PROJECT_DIR$/src/main/java/com/neo/exception/DefaultExceptionHandler.java" charset="GBK" />
     <file url="file://$PROJECT_DIR$/src/main/java/com/neo/exception/ErrorEnum.java" charset="GBK" />
     <file url="file://$PROJECT_DIR$/src/main/java/com/neo/ftp/FtpUtils.java" charset="GBK" />
@@ -46,7 +44,6 @@
     <file url="file://$PROJECT_DIR$/src/main/resources/static/fileimg" charset="GBK" />
     <file url="file://$PROJECT_DIR$/src/main/resources/static/images/1.jpg" charset="GBK" />
     <file url="file://$PROJECT_DIR$/src/main/resources/static/js/common.js" charset="UTF-8" />
-    <file url="file://$PROJECT_DIR$/src/main/resources/yunpanhtml/yunpan.rar" charset="GBK" />
     <file url="file://$PROJECT_DIR$/src/test/java/com/neo/Test.java" charset="UTF-8" />
   </component>
 </project>
