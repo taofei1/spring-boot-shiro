@@ -2,6 +2,9 @@
 <project version="4">
   <component name="Encoding">
     <file url="file://$PROJECT_DIR$" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/src/main/java/cocourrence/chapter4/1.jpg" charset="GBK" />
+    <file url="file://$PROJECT_DIR$/src/main/java/cocourrence/chapter4/2.jpg" charset="GBK" />
+    <file url="file://$PROJECT_DIR$/src/main/java/cocourrence/chapter4/3.jpg" charset="GBK" />
     <file url="file://$PROJECT_DIR$/src/main/java/cocourrence/chapter4/Piped.java" charset="GBK" />
     <file url="file://$PROJECT_DIR$/src/main/java/com/neo/aspect/LogAspect.java" charset="GBK" />
     <file url="file://$PROJECT_DIR$/src/main/java/com/neo/config/MyShiroRealm.java" charset="GBK" />
@@ -11,7 +14,6 @@
     <file url="file://$PROJECT_DIR$/src/main/java/com/neo/ftp/FtpUtils.java" charset="GBK" />
     <file url="file://$PROJECT_DIR$/src/main/java/com/neo/listener/EventListener.java" charset="GBK" />
     <file url="file://$PROJECT_DIR$/src/main/java/com/neo/quartz/Monitor.java" charset="GBK" />
-    <file url="file://$PROJECT_DIR$/src/main/java/com/neo/service/impl/CloudFileServiceImpl.java" charset="GBK" />
     <file url="file://$PROJECT_DIR$/src/main/java/com/neo/sync/SyncFile1.java" charset="GBK" />
     <file url="file://$PROJECT_DIR$/src/main/java/com/neo/sync/SyncFile2.java" charset="GBK" />
     <file url="file://$PROJECT_DIR$/src/main/java/com/neo/task/TaskUtils.java" charset="GBK" />
@@ -22,7 +24,6 @@
     <file url="file://$PROJECT_DIR$/src/main/java/com/neo/util/Msg.java" charset="GBK" />
     <file url="file://$PROJECT_DIR$/src/main/java/com/neo/util/Response.java" charset="GBK" />
     <file url="file://$PROJECT_DIR$/src/main/java/com/neo/util/WinRARUtil.java" charset="GBK" />
-    <file url="file://$PROJECT_DIR$/src/main/java/com/neo/web/CloudFileController.java" charset="GBK" />
     <file url="file://$PROJECT_DIR$/src/main/java/com/neo/web/CodeTableController.java" charset="GBK" />
     <file url="file://$PROJECT_DIR$/src/main/java/com/neo/web/LoginLogController.java" charset="GBK" />
     <file url="file://$PROJECT_DIR$/src/main/java/com/neo/web/MailConfigController.java" charset="GBK" />
@@ -40,20 +41,11 @@
     <file url="file://$PROJECT_DIR$/src/main/java/proxy/imp/AnimalInterface.java" charset="GBK" />
     <file url="file://$PROJECT_DIR$/src/main/resources/application.yml" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/src/main/resources/sql/springboot-shiro.sql" charset="UTF-8" />
-    <file url="file://$PROJECT_DIR$/src/main/resources/static/cloudFile/box.css" charset="GBK" />
-    <file url="file://$PROJECT_DIR$/src/main/resources/static/cloudFile/checkbox.css" charset="GBK" />
-    <file url="file://$PROJECT_DIR$/src/main/resources/static/cloudFile/fileajax.js" charset="UTF-8" />
-    <file url="file://$PROJECT_DIR$/src/main/resources/static/cloudFile/filebox.css" charset="GBK" />
-    <file url="file://$PROJECT_DIR$/src/main/resources/static/cloudFile/filejs.js" charset="UTF-8" />
-    <file url="file://$PROJECT_DIR$/src/main/resources/static/cloudFile/filemodal.css" charset="GBK" />
-    <file url="file://$PROJECT_DIR$/src/main/resources/static/cloudFile/iconfont.css" charset="GBK" />
-    <file url="file://$PROJECT_DIR$/src/main/resources/static/cloudFile/iconfont.js" charset="GBK" />
     <file url="file://$PROJECT_DIR$/src/main/resources/static/cropbox/cropbox.css" charset="GBK" />
     <file url="file://$PROJECT_DIR$/src/main/resources/static/cropbox/cropbox.js" charset="GBK" />
     <file url="file://$PROJECT_DIR$/src/main/resources/static/fileimg" charset="GBK" />
     <file url="file://$PROJECT_DIR$/src/main/resources/static/images/1.jpg" charset="GBK" />
     <file url="file://$PROJECT_DIR$/src/main/resources/static/js/common.js" charset="UTF-8" />
-    <file url="file://$PROJECT_DIR$/src/main/resources/templates/file/cloudFile.html" charset="GBK" />
     <file url="file://$PROJECT_DIR$/src/main/resources/yunpanhtml/yunpan.rar" charset="GBK" />
     <file url="file://$PROJECT_DIR$/src/test/java/com/neo/Test.java" charset="UTF-8" />
   </component>
