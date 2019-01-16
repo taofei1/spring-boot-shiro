@@ -2,7 +2,7 @@ package com.neo.service.impl;
 
 import com.neo.config.GlobalConfig;
 import com.neo.enums.FileOperType;
-import com.neo.enums.Suffix;
+import com.neo.enums.FileType;
 import com.neo.exception.BusinessException;
 import com.neo.exception.ErrorEnum;
 import com.neo.mapper.CloudFileMapper;
@@ -61,7 +61,6 @@ public class CloudFileServiceImpl implements CloudFileService {
         if (ObjectUtils.isEmpty(cloudFile)) {
             throw new BusinessException(ErrorEnum.PARAM_ERROR);
         }
-        //cloudFile.setUserId(getCurrentUserId());
         return cloudFileMapper.selectAllCurrentPage(cloudFile);
     }
 
@@ -70,19 +69,19 @@ public class CloudFileServiceImpl implements CloudFileService {
         List<String> fileSuffix;
         switch (cateGory.toLowerCase()) {
             case "image":
-                fileSuffix = Suffix.IMAGE.getSuffix();
+                fileSuffix = FileType.IMAGE.getSuffix();
                 break;
             case "video":
-                fileSuffix = Suffix.VIDEO.getSuffix();
+                fileSuffix = FileType.VIDEO.getSuffix();
                 break;
             case "audio":
-                fileSuffix = Suffix.AUDIO.getSuffix();
+                fileSuffix = FileType.AUDIO.getSuffix();
                 break;
             case "document":
-                fileSuffix = Suffix.DOCUMENT.getSuffix();
+                fileSuffix = FileType.DOCUMENT.getSuffix();
                 break;
             case "zip":
-                fileSuffix = Suffix.ZIP.getSuffix();
+                fileSuffix = FileType.ZIP.getSuffix();
                 break;
             default:
                 throw new BusinessException(ErrorEnum.PARAM_ERROR, "文件分类不存在！:" + cateGory);
@@ -188,17 +187,23 @@ public class CloudFileServiceImpl implements CloudFileService {
     @Override
     public List<CloudFile> selectShareFirstPage(String searchName) {
         List<CloudFile> cloudFiles = cloudFileMapper.selectAllShares();
-        List<CloudFile> firstPage = new ArrayList<>();
-        //当file没有父目录或者父目录没有共享的时候就在第一页显示
-        cloudFiles.forEach(cloudFile -> {
-            if (cloudFile.getParentId() == 0 || cloudFileMapper.selectByFileId(cloudFile.getParentId()).getIsShare() == 0L) {
-                //共享首页搜索
-                if (StringUtils.isEmpty(searchName) || cloudFile.getFileName().contains(searchName)) {
+        //不为空则将搜索结果直接返回
+        if (StringUtils.isNotEmpty(searchName)) {
+            return cloudFiles;
+        }
+        //仅返回首页数据
+        else {
+
+            List<CloudFile> firstPage = new ArrayList<>();
+            //当file没有父目录或者父目录没有共享的时候就在第一页显示
+            cloudFiles.forEach(cloudFile -> {
+                if (cloudFile.getParentId() == 0 || cloudFileMapper.selectByFileId(cloudFile.getParentId()).getIsShare() == 0L) {
+
                     firstPage.add(cloudFile);
                 }
-            }
-        });
-        return firstPage;
+            });
+            return firstPage;
+        }
     }
 
     /**

@@ -47,7 +47,10 @@
     <!--查询共享的文件和文件夹-->
     <select id="selectAllShares" resultMap="resultFile">
         <include refid="select"/>
-        where is_trash='0'
+        where is_trash='0' and is_share='1'
+        <if test="fileName!=null and fileName!=''">
+            and file_name LIKE concat(concat('%',#{fileName}),'%')
+        </if>
         order by is_directory desc,update_time desc
     </select>
     <!--查询个人当前页面的最大文件或者文件夹的最大id-->
@@ -73,7 +76,7 @@
     <!--查询个人的可见垃圾，如果有搜索按文件名搜索，然后排序-->
     <select id="selectSeeTrash" resultMap="resultFile">
         <include refid="select"/>
-        WHERE user_id=#{user_id} AND is_trash='1'
+        WHERE user_id=#{userId} AND is_trash='1'
         <if test="fileName!=null and fileName!=''">
             and file_name LIKE concat(concat('%',#{fileName}),'%')
         </if>

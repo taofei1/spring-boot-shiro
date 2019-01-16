@@ -24,20 +24,24 @@
 <div class="bgc-w box box-primary" style="height: 695px;">
     <!--盒子头-->
     <div class="box-header">
-        <a style="font-size: 14px;" th:each="path,pathStat:${parentPaths}" style="cursor:pointer;"
-           th:if="${pathStat.size}>1 and ${pathStat.index} eq ${pathStat.size}-2"
+        <a style="font-size: 14px;color: #0a6aa1;cursor:pointer;" th:each="path,pathStat:${parentPaths}"
+           th:if="${pathStat.size}>1 and ${pathStat.index} eq ${pathStat.size}-2 "
            th:onclick="'refresh('+${path.fileId}+')'">
-
-            返回上一级 |
+            返回上一级 <span style="color: black">|</span>
         </a>
         <h3 class="box-title" style="font-size: 12px;" th:each="path,pathStat:${parentPaths}">
 
-            <a style="font-size: 12px;" th:text="${path.fileName}" style="cursor:pointer;"
+            <a th:if="${pathStat.index!=pathStat.size-1}" style="font-size: 14px;" th:text="${path.fileName}"
+               style="cursor:pointer;color: #0a6aa1"
                th:onclick="'refresh('+${path.fileId}+')'">
             </a>
-            <span th:if="${pathStat.index!=pathStat.size-1}">
+            <span th:if="${pathStat.index!=pathStat.size-1}" style="font-size: 14px;">
                 >
             </span>
+            <span th:if="${pathStat.index==pathStat.size-1}" style="font-size: 14px;" th:text="${path.fileName}">
+            </span>
+
+
         </h3>
 
         <div class="box-tools">

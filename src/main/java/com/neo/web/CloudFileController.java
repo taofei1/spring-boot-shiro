@@ -1,6 +1,7 @@
 package com.neo.web;
 
 import com.neo.enums.FileOperType;
+import com.neo.enums.FileType;
 import com.neo.exception.BusinessException;
 import com.neo.exception.ErrorEnum;
 import com.neo.pojo.CloudFile;
@@ -62,13 +63,13 @@ public class CloudFileController {
         //名称不为空则是搜索，此时导航路劲需要改变
         List<CloudFile> cloudFileList = new ArrayList<>();
         if (StringUtils.isNotEmpty(cloudFile.getFileName())) {
-            CloudFile c = new CloudFile();
+
             CloudFile index = cloudFileService.selectByFileId(1L);
-            c.setFileName("\"" + cloudFile.getFileName() + "\"" + "的搜索结果");
+
             map.put("search", "all");
             cloudFileList.add(index);
             map.put("searchValue", cloudFile.getFileName());
-            cloudFileList.add(c);
+            cloudFileList = nav(cloudFile.getFileName(), cloudFileList);
         } else {
             cloudFileList = cloudFileService.getAllParentPaths(cloudFile.getFileId());
         }
@@ -85,11 +86,9 @@ public class CloudFileController {
     }
 
     public List<CloudFile> nav(String fileName, List list) {
-
         if (list == null) {
             list = new ArrayList();
         }
-
         CloudFile c = new CloudFile();
         c.setFileName("\"" + fileName + "\"" + "的搜索结果");
         list.add(c);
@@ -115,10 +114,11 @@ public class CloudFileController {
         cloudFile.setFileName("共享文件");
         navigation.add(cloudFile);
         if (StringUtils.isNotEmpty(fileName)) {
+            navigation = nav(fileName, navigation);
             map.put("searchValue", fileName);
         }
         map.put("parentPaths", navigation);
-        return prefix;
+        return prefix + "/fileManager";
     }
 
     /**
@@ -137,9 +137,10 @@ public class CloudFileController {
         map.put("cloudFiles", cateGoryFileAndNameLike);
         List<CloudFile> navigation = new ArrayList<>();
         CloudFile cloudFile = new CloudFile();
-        cloudFile.setFileName(cate);
+        cloudFile.setFileName(FileType.valueOf(cate.toUpperCase()).getName());
         navigation.add(cloudFile);
         if (StringUtils.isNotEmpty(fileName)) {
+            navigation = nav(fileName, navigation);
             map.put("searchValue", fileName);
         }
         map.put("parentPaths", navigation);
@@ -165,12 +166,12 @@ public class CloudFileController {
             map.put("searchValue", fileName);
         }
         map.put("parentPaths", navigation);
-        return prefix;
+        return prefix + "/fileManager";
     }
 
     @PostMapping("/verifyName")
     @ResponseBody
-    public Response verfiyName(String name, Long parentId) throws BusinessException {
+    public Response verifyName(String name, Long parentId) throws BusinessException {
         if (!cloudFileService.nameCanUse(name, parentId)) {
             return Response.fail(ErrorEnum.DUPLICATE_FILENAME);
         }

@@ -33,14 +33,13 @@ $(".loadfiletype").on("click", ".findfileandpathgo", function () {
 });
 
 function loadFiles(search, type) {
-
-    var loadType = type == null ? $("#loadType").val() : type;
+    var loadType = !type ? $("#loadType").val() : type;
     switch (loadType) {
         case 'all':
             if (search == null || search == '') {
                 $(".loadfiletype").load(prefix + "/all?fileId=1");
             } else {
-                $(".loadfiletype").load(prefix + "/all?fileId=1&fileName=" + search);
+                $(".loadfiletype").load(prefix + "/all?fileName=" + search);
             }
             break;
         case 'share':
@@ -137,9 +136,10 @@ function refresh(fileId) {
     if (fileId != null && fileId != "") {
         $(".loadfiletype").load(prefix + '/all?fileId=' + fileId);
     } else {
-        //id不存在则是搜索结果
-        var searchValue = $("#search").val();
-        loadFiles(searchValue);
+        //id不存在则是分类或者搜索结果标签
+
+        //  var searchValue = $("#search").val();
+        loadFiles();
     }
 
 }
