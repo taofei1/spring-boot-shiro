@@ -8,6 +8,7 @@ import com.neo.exception.ErrorEnum;
 import com.neo.mapper.CloudFileMapper;
 import com.neo.pojo.CloudFile;
 import com.neo.service.CloudFileService;
+import com.neo.util.DateUtils;
 import com.neo.util.ShiroUtil;
 import com.neo.util.StringUtils;
 import lombok.extern.slf4j.Slf4j;
@@ -146,7 +147,8 @@ public class CloudFileServiceImpl implements CloudFileService {
         }
         String suffix = FilenameUtils.getExtension(multipartFile.getOriginalFilename()).toLowerCase();
         String uploadPath = GlobalConfig.getCloudFilePath();
-        String newFileName = UUID.randomUUID().toString().toLowerCase() + "." + suffix;
+
+        String newFileName = DateUtils.dateTimeNow() + UUID.randomUUID().toString().substring(0, 5).toLowerCase() + "." + suffix;
         File targetFile = new File(uploadPath, newFileName);
         multipartFile.transferTo(targetFile);
         CloudFile cloudFile = new CloudFile();

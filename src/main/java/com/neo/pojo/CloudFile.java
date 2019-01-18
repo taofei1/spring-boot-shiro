@@ -32,4 +32,5 @@ public class CloudFile extends BaseEntity {
     private Integer isDirectory;
     //上级目录id
     private Long parentId;
+
 }

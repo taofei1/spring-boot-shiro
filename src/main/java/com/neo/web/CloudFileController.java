@@ -186,13 +186,14 @@ public class CloudFileController {
 
 
     @PostMapping("/upload")
-    public String uploadFile(Long parentId, MultipartFile multipartFile, Map map) throws BusinessException, IOException {
+    @ResponseBody
+    public Response uploadFile(Long parentId, MultipartFile multipartFile, Map map) throws BusinessException, IOException {
         cloudFileService.uploadFile(parentId, multipartFile);
         CloudFile cloudFile = new CloudFile();
         cloudFile.setParentId(parentId);
         cloudFile.setUserId(ShiroUtil.getSysUser().getUid().longValue());
         map.put("cloudFile", cloudFile);
-        return "forward:/" +prefix+"/all";
+        return Response.success();
     }
 
 

@@ -161,9 +161,14 @@
                         <div class="file-img" style="cursor:pointer;">
                             <img th:if="${cloudFile.suffix=='mp4' or cloudFile.suffix=='rmvb'}"
                                  src="/fileimg/Video.png"/>
-                            <img th:if="${cloudFile.suffix=='mp3'}" src="/fileimg/PDF.png"/>
+                            <img th:if="${#strings.contains(cloudFile.contentType,'audio')}" src="/fileimg/Music.png"/>
                             <img th:if="${cloudFile.suffix=='pdf'}" src="/fileimg/PDF.png"/>
-                            <img th:if="${cloudFile.suffix=='zip'}" src="/fileimg/ZIP.png"/>
+                            <img th:if="${cloudFile.suffix=='exe'}" src="/fileimg/exe.png"/>
+                            <img th:if="${cloudFile.suffix=='java'}" src="/fileimg/exe.png"/>
+                            <img th:if="${cloudFile.suffix=='doc'||cloudFile.suffix=='docx'}" src="/fileimg/word.png"/>
+                            <img th:if="${cloudFile.suffix=='xlxs'||cloudFile.suffix=='xls'}" src="/fileimg/excel.png"/>
+                            <img th:if="${cloudFile.suffix=='zip'||cloudFile.suffix=='rar'||cloudFile.suffix=='7z'||cloudFile.suffix=='tar'||cloudFile.suffix=='taz'}"
+                                 src="/fileimg/ZIP.png"/>
                             <img th:if="${cloudFile.suffix=='txt'}" src="/fileimg/Text.png"/>
                             <img th:if="${cloudFile.suffix=='jpg'}" th:src="${cloudFile.filePath}"
                                  style="width: 100%;height: auto"/>
@@ -201,7 +206,6 @@
         $('.folder').css({'pointer-events': ' none', 'cursor': 'default'});
         $(' .topcreatepath').hide();
     }
-
 
 </script>
 </html>
