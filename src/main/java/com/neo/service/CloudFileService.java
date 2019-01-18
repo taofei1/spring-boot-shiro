@@ -22,7 +22,7 @@ public interface CloudFileService {
 
     int insertOne(CloudFile cloudFile) throws BusinessException;
 
-    int updateOne(Long id, FileOperType fileOperType) throws BusinessException;
+    void updateOne(Long id, FileOperType fileOperType) throws BusinessException;
 
     void uploadFile(Long parentDirectoryId, MultipartFile multipartFile) throws BusinessException, IOException;
 

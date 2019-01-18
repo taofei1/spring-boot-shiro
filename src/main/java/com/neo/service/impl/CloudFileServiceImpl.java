@@ -119,9 +119,9 @@ public class CloudFileServiceImpl implements CloudFileService {
      */
     @Transactional
     @Override
-    public int updateOne(Long id, FileOperType fileOperType) throws BusinessException {
+    public void updateOne(Long id, FileOperType fileOperType) throws BusinessException {
         CloudFile cf = cloudFileMapper.selectByFileId(id);
-        checkAccess(cf);
+        checkAccess(cf, fileOperType);
         //还原的时候需要检测原目录是否有重名文件
         if (fileOperType == FileOperType.RESTORE) {
             if (!nameCanUse(cf.getFileName(), cf.getParentId())) {
@@ -130,7 +130,6 @@ public class CloudFileServiceImpl implements CloudFileService {
         }
         doUpdateFileByOperType(cf, fileOperType, true);
         traverse(cf, fileOperType);
-        return cloudFileMapper.updateOne(cf);
     }
 
     @Override
@@ -138,8 +137,8 @@ public class CloudFileServiceImpl implements CloudFileService {
         if (ObjectUtils.isEmpty(multipartFile)) {
             return;
         }
-        if (parentDirectoryId == null) {
-            throw new BusinessException(ErrorEnum.PARAM_ERROR, "缺少文件父目录ID");
+        if (parentDirectoryId == null || parentDirectoryId < 0) {
+            parentDirectoryId = 1L;
         }
         Long size = multipartFile.getSize();
         if (size > GlobalConfig.getMaxFileSizeByte()) {
@@ -168,7 +167,7 @@ public class CloudFileServiceImpl implements CloudFileService {
     @Override
     public int changeName(Long fileId, String fileName) throws BusinessException {
         CloudFile cl = cloudFileMapper.selectByFileId(fileId);
-        checkAccess(cl);
+        checkAccess(cl, null);
 
         CloudFile parent = cloudFileMapper.selectByFileId(cl.getParentId());
         parent.setFileName(null);
@@ -218,7 +217,7 @@ public class CloudFileServiceImpl implements CloudFileService {
     @Override
     public int moveFile(Long fileId, Long newParentId) throws BusinessException {
         CloudFile cl = cloudFileMapper.selectByFileId(fileId);
-        checkAccess(cl);
+        checkAccess(cl, null);
         List<CloudFile> cloudFiles = cloudFileMapper.selectAllByUserIdAndParentId(getCurrentUserId(), newParentId, 0);
         for (CloudFile c : cloudFiles) {
             if (cl.getFileName().equals(c.getFileName())) {
@@ -237,7 +236,7 @@ public class CloudFileServiceImpl implements CloudFileService {
     @Override
     public boolean nameCanUse(String name, Long parentId) throws BusinessException {
         CloudFile cl = cloudFileMapper.selectByFileId(parentId);
-        checkAccess(cl);
+        checkAccess(cl, null);
         List<CloudFile> cls = cloudFileMapper.selectAllByUserIdAndParentId(getCurrentUserId(), parentId, 0);
         for (CloudFile cloudFile1 : cls) {
             if (cloudFile1.getFileName().equals(name)) {
@@ -253,7 +252,7 @@ public class CloudFileServiceImpl implements CloudFileService {
     public void deleteBatch(List<Long> ids) throws BusinessException {
         for (Long id : ids) {
             CloudFile cloudFile = cloudFileMapper.selectByFileId(id);
-            checkAccess(cloudFile);
+            checkAccess(cloudFile, null);
         }
         cloudFileMapper.deleteBatch(ids);
         for (Long id : ids) {
@@ -271,7 +270,7 @@ public class CloudFileServiceImpl implements CloudFileService {
     @Override
     public void deleteOne(Long fileId) throws BusinessException {
         CloudFile cl = cloudFileMapper.selectByFileId(fileId);
-        checkAccess(cl);
+        checkAccess(cl, null);
         //如果是文件，直接删除
         if (cl.getIsDirectory() == 0) {
             int result = cloudFileMapper.deleteOne(fileId);
@@ -296,7 +295,7 @@ public class CloudFileServiceImpl implements CloudFileService {
     private void traverse(CloudFile cloudFile, FileOperType type) throws BusinessException {
         List<CloudFile> cloudFileList = doSelectByOperType(cloudFile, type);
         for (CloudFile cloud : cloudFileList) {
-            doUpdateFileByOperType(cloudFile, type, false);
+            doUpdateFileByOperType(cloud, type, false);
             if (cloud.getIsDirectory() != 0) {
                 traverse(cloud, type);
             }
@@ -305,53 +304,60 @@ public class CloudFileServiceImpl implements CloudFileService {
 
     private List<CloudFile> doSelectByOperType(CloudFile cloudFile, FileOperType type) {
         List<CloudFile> result = null;
-        switch (type) {
-            case TRASH:
-            case SHARE:
-            case NOTSHARE:
-                result = cloudFileMapper.selectAllByUserIdAndParentId(getCurrentUserId(), cloudFile.getFileId(), 0);
-                break;
-            case RESTORE:
-            case DELETE:
-                result = cloudFileMapper.selectAllByUserIdAndParentId(getCurrentUserId(), cloudFile.getFileId(), 1);
-                break;
+
+        if (type == FileOperType.TRASH || type == FileOperType.SHARE || type == FileOperType.NOTSHARE) {
+            result = cloudFileMapper.selectAllByUserIdAndParentId(getCurrentUserId(), cloudFile.getFileId(), 0);
+        } else if (type == FileOperType.RESTORE || type == FileOperType.DELETE) {
+
+            result = cloudFileMapper.selectAllByUserIdAndParentId(getCurrentUserId(), cloudFile.getFileId(), 1);
+
         }
         return result;
     }
 
+    private CloudFile createCloudFile(Long fileId) {
+        CloudFile cf = new CloudFile();
+        cf.setIsTrash(null);
+        cf.setIsShare(null);
+        cf.setFileId(fileId);
+        return cf;
+
+    }
     private void doUpdateFileByOperType(CloudFile cloudFile, FileOperType type, boolean isVisibleTrash) {
+        CloudFile cf = createCloudFile(cloudFile.getFileId());
         switch (type) {
             case TRASH:
                 if (isVisibleTrash) {
-                    cloudFile.setIsTrash(1);
+                    cf.setIsTrash(1);
                 } else {
-                    cloudFile.setIsTrash(2);
+                    cf.setIsTrash(2);
                 }
-                cloudFile.setIsShare(0);
+                cf.setIsShare(0);
                 break;
             case RESTORE:
-                cloudFile.setIsTrash(0);
+                cf.setIsTrash(0);
                 break;
             case SHARE:
-                cloudFile.setIsShare(1);
+                cf.setIsShare(1);
                 break;
             case NOTSHARE:
-                cloudFile.setIsShare(0);
+                cf.setIsShare(0);
                 break;
             case DELETE:
                 cloudFileMapper.deleteOne(cloudFile.getFileId());
                 return;
         }
-        cloudFileMapper.updateOne(cloudFile);
+        cloudFileMapper.updateOne(cf);
     }
 
-    private void checkAccess(CloudFile cl) throws BusinessException {
+    private void checkAccess(CloudFile cl, FileOperType operType) throws BusinessException {
         if (StringUtils.isNull(cl)) {
             throw new BusinessException(ErrorEnum.DATA_NOT_FOUND, "要操作的文件或文件夹不存在！" + cl.getFileName());
         } else if (cl.getUserId() != getCurrentUserId() && cl.getFileId() != 1L) {
             throw new BusinessException(ErrorEnum.PARAM_ERROR, "无法操作非当前用户的文件！");
-        } else if (cl.getIsTrash() != 0) {
-            throw new BusinessException(ErrorEnum.PARAM_ERROR, "回收站文件无法操作!");
+        } else if (cl.getIsTrash() != 0 && operType != FileOperType.DELETE && operType != FileOperType.RESTORE) {
+            throw new BusinessException(ErrorEnum.PARAM_ERROR, "回收站文件无法进行此操作!");
+
         }
     }
 

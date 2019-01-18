@@ -17,14 +17,12 @@ $(".loadfiletype").on("mouseover mouseout", ".file-one", function (event) {
  * .file-box .file-check"
  */
 $(".loadfiletype").on("click", ".file-check", function () {
-    console.log("ssss");
     if ($(this).parent(".file-one").hasClass("file-one-check")) {
         $(this).parent(".file-one").removeClass("file-one-check");
     } else {
         $(this).parent(".file-one").addClass("file-one-check");
     }
-    changedeletehref();
-    changesharehref();
+
 });
 
 /**
@@ -43,8 +41,6 @@ $(".loadfiletype").on("click", ".allcheck", function () {
         });
         $(this).addClass("allchecked");
     }
-    changedeletehref();
-    changesharehref();
 });
 
 /**
@@ -54,46 +50,37 @@ $(".loadfiletype").on("click", ".allcheck", function () {
  */
 $(".loadfiletype").on("mousedown", ".file-one", function (e) {
     if (3 == e.which) {
-        console.log("111");
         $(document).bind("contextmenu", function (e) {
             return false;
         });
+
         if (!$(this).hasClass("file-one-check")) {
             $(this).addClass("file-one-check");
             $(this).siblings(".file-one").removeClass("file-one-check");
-            changedeletehref();
-            changesharehref();
-        }
-        if ($(this).find(".file-img").hasClass("path")) {
-            var href = $(this).find(".path a").attr("href");
-            $(".menu .open").attr("href", href);
-            $(".menu .open").removeClass("disabled");
-            $(".menu .rename").removeClass("disabled");
-            $(".menu .downloadfile").addClass("disabled");
-            $(".menu .doshare").addClass("disabled");
-        } else {
-            $(".menu .open").addClass("disabled");
-            $(".menu .rename").removeClass("disabled");
-            $(".menu .doshare").removeClass("disabled");
 
-            /**
-             *  给下载a链接添加 href 地址目标
-             */
-            $(".menu .downloadfile").removeClass("disabled");
-            var fileid = $(this).find(".filemessage").val();
-            console.log(fileid);
-            $(".menu .downloadfile").attr("href", "downfile?fileid=" + fileid);
+        }
+        var loadType = $("#loadType").val();
+        if (loadType != 'trash' && loadType != 'share') {
+            console.log(getCheckedFilesId()[0]);
+            console.log(getIsShare(getCheckedFilesId()[0]));
+            if (getCheckedFilesId().length > 1 || !getIsShare(getCheckedFilesId()[0])) {
+                $(".cancelShare").hide();
+                $(".fileShare").show();
+            } else if (getIsShare(getCheckedFilesId()[0])) {
+                $(".fileShare").hide();
+                $(".cancelShare").show();
+
+            } else {
+                $(".cancelShare").hide();
+                $(".fileShare").hide();
+            }
         }
 
 
         /**
          * 选择超过一个禁用右键菜单中的部分a链接
          */
-        if ($(".file-one-check").length > 1) {
-            $(".menu .open").addClass("disabled");
-            $(".menu .downloadfile").addClass("disabled");
-            $(".menu .rename").addClass("disabled");
-        }
+
         var oX = e.pageX;
         var oY = e.pageY;
 
@@ -191,18 +178,29 @@ $("#thismodal .box-footer").on("click", ".mcmodalcancle", function () {
     $("#thismodal .box-footer .mctoid").val($("#thismodal .box-footer .userrootpath").val());
 });
 
+
 /**
- * 创建文件夹
+ * 得到选择的文件和文件夹id
  */
+function getCheckedFilesId(fileNames) {
+    var checkedpaths = $(".file-one.file-one-check");
+    var checkedFilesId = [];
+    checkedpaths.each(function () {
+        checkedFilesId.push($(this).attr("id"));
+        if (fileNames) {
+            fileNames.push($(this).find('.filename').children('a').text());
+        }
+    });
+    return checkedFilesId;
+}
 
-/*$(".topcreatepath").click(function(){
-	$(".creatpath").removeClass("diplaynone");
-});
-$(".creatpath ").click(".cansalcreate",function(){
-	$(".creatpath").addClass("diplaynone");
-});*/
+function getIsShare(fileId) {
+    return $("#" + fileId).data("isshare") == 1;
+}
 
-
+function getIsTrash(fileId) {
+    return $("#" + fileId).data("isTrash") > 0;
+}
 /**
  * 得到已选择得文件夹 和文件
  * @param pathids
@@ -251,22 +249,5 @@ function changedeletehref() {
 
 }
 
-/**
- * 改变分享得地址
- * @returns
- */
-function changesharehref() {
-    var checkpathids = new Array();
-    var checkfileids = new Array();
-    checkedpaths(checkpathids, checkfileids);
-    console.log("checkfileids:" + checkfileids);
 
-    var href = $(".menu .doshare").attr("href");
-    var newhref;
-    if (href != undefined) {
-        //var href = "doshare?checkfileids="+checkfileids;
-        href = href.split("&");
-        newhref = href[0] + "&checkfileids=" + checkfileids;
-        $(".menu .doshare").attr("href", newhref);
-    }
-}
+

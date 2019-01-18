@@ -209,27 +209,32 @@ public class CloudFileController {
         return Response.success();
     }
 
-    @PostMapping("/trash/{id}")
-    public String trashFile(@PathVariable Long id, Long parentId, Map map) throws BusinessException {
-        cloudFileService.updateOne(id, FileOperType.TRASH);
-
-        CloudFile cloudFile = new CloudFile();
-        cloudFile.setParentId(parentId);
-        cloudFile.setUserId(ShiroUtil.getSysUser().getUid().longValue());
-        map.put("cloudFile", cloudFile);
-        return "forward:/" +prefix+"/all";
+    @PostMapping("/trash")
+    @ResponseBody
+    public Response trashFile(@RequestParam("ids[]") List<Long> ids) throws BusinessException {
+        for (Long id : ids) {
+            cloudFileService.updateOne(id, FileOperType.TRASH);
+        }
+        return Response.success();
     }
 
-    @PostMapping("/restore/{id}")
-    public String restoreFile(@PathVariable Long id) throws BusinessException {
-        cloudFileService.updateOne(id, FileOperType.RESTORE);
-        return "forward:/" + prefix+"trash";
+    @PostMapping("/restore")
+    @ResponseBody
+    public Response restoreFile(@RequestParam("ids[]") List<Long> ids) throws BusinessException {
+        for (Long id : ids) {
+            cloudFileService.updateOne(id, FileOperType.RESTORE);
+        }
+        return Response.success();
     }
 
-    @PostMapping("/remove/{id}")
-    public String remove(@PathVariable Long id) throws BusinessException {
-        cloudFileService.updateOne(id, FileOperType.DELETE);
-        return "forward:/" + prefix+"trash";
+    @PostMapping("/remove")
+    @ResponseBody
+    public Response remove(@RequestParam("ids[]") List<Long> ids) throws BusinessException {
+        for (Long id : ids) {
+            cloudFileService.updateOne(id, FileOperType.DELETE);
+        }
+
+        return Response.success();
     }
 
     @PostMapping("/modifyName/{id}")

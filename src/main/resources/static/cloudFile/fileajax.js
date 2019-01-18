@@ -138,23 +138,54 @@ function refresh(fileId) {
     } else {
         //id不存在则是分类或者搜索结果标签
 
-        //  var searchValue = $("#search").val();
-        loadFiles();
+        var searchValue = $("#searchValue").val();
+        loadFiles(searchValue);
     }
 
 }
 
-/*$('#createDir').click(function () {
-	var name=$("#dirName").val();
-	var parentId=$("#dirParentId").val();
-	$.post(prefix+"/verifyName",{name:name,parentId:parentId},function (res) {
-		if(res.code!=00){
+function restore() {
+    var checkedFilesId = getCheckedFilesId();
+    $.post(prefix + "/restore", {ids: checkedFilesId}, function (res) {
+        if (res.code != '00') {
             msgError(res.data);
-		}else{
-            $(".loadfiletype").load(prefix+'/createDir',{fileId:parentId,dirName:name});
-		}
+        } else {
+            refresh();
+        }
     })
-});*/
+}
+
+function remove() {
+    var names = [];
+    var checkedFilesId = getCheckedFilesId(names);
+    if (checkedFilesId.length == 0) {
+        msgError("请选择文件或文件夹！");
+    } else {
+        if ($('#loadType').val() == 'trash') {
+            layConfirm('确定要将"' + names.join(',') + '"彻底删除吗?删除后不可恢复', function () {
+                $.post(prefix + "/remove", {ids: checkedFilesId}, function (res) {
+                    if (res.code != '00') {
+                        msgError(res.data);
+                    } else {
+                        refresh($("#currentPathId").val());
+                    }
+                });
+            });
+        } else {
+            layConfirm('确定要将"' + names.join(',') + '"放入回收站吗?', function () {
+                $.post(prefix + "/trash", {ids: checkedFilesId}, function (res) {
+                    if (res.code != '00') {
+                        msgError(res.data);
+                    } else {
+                        refresh($("#currentPathId").val());
+                    }
+                });
+            });
+        }
+    }
+
+}
+
 function createDir() {
     var name = $("#dirName").val();
     var parentId = $("#dirParentId").val();
@@ -199,6 +230,7 @@ function checkedpaths2(pathids, fileids) {
     var checkedpaths = $(".file-one.file-one-check");
     var i = 0;
     var j = 0;
+    console.log(checkedpaths);
     checkedpaths.each(function () {
         if ($(this).find(".file-img").hasClass("path")) {
             pathids[i] = $(this).find(".pathmessage").val();

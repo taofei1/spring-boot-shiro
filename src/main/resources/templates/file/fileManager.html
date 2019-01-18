@@ -1,25 +1,34 @@
+
 <!DOCTYPE html>
 <html xmlns:th="http://www.w3.org/1999/xhtml">
+<style>
+    a {
+        cursor: pointer;
+    }
+</style>
 <input type="hidden" id="loadType" th:value="${loadType}"/>
+<input type="hidden" id="searchValue" th:value="${searchValue}"/>
+<input type="hidden" id="currentPathId" th:value="${parentId}">
 <div class="menu">
-    <ul class="nav nav-pills nav-stacked" style="padding:5px 0 5px 0;">
-
-        <li><a class="filereturnback">还原</a></li>
+    <ul th:if="${loadType!='trash' and loadType!='share'}" class="nav nav-pills nav-stacked"
+        style="padding:5px 0 5px 0;">
 
         <li><a class="downloadfile">下载</a></li>
-        <li><a class="downloadfile">下载</a></li>
-        <li><a class="loadokshare">分享</a></li>
+        <li><a class="fileShare">共享</a></li>
+        <li><a class="cancelShare">取消共享</a></li>
         <li><a class="menurename">重命名</a></li>
-        <li><a onclick="{return confirm('文件将放入回收站，确定删除吗？');};" class="loadtrash">删除</a></li>
-
-        <li><a class="open">打开</a></li>
-        <li><a class="downloadfile">下载</a></li>
-        <li><a class="doshare" href="doshare?pathid=${nowpath.id}&">分享</a></li>
         <li><a class="movefile">移动到</a></li>
         <li><a class="copyfile">复制到</a></li>
-        <li><a class="menurename">重命名</a></li>
-        <li><a onclick="{return confirm('文件将放入回收站，确定删除吗？');};" class="delete">删除</a></li>
+        <li><a onclick="remove()" class="loadtrash">删除</a></li>
     </ul>
+    <ul th:if="${loadType=='share'}">
+        <li><a class="download">下载</a></li>
+    </ul>
+    <ul th:if="${loadType=='trash'}" class="nav nav-pills nav-stacked" style="padding:5px 0 5px 0;">
+        <li><a class="restore" onclick="restore()">还原</a></li>
+        <li><a class="remove" onclick="remove()">彻底删除</a></li>
+    </ul>
+
 </div>
 <div class="bgc-w box box-primary" style="height: 695px;">
     <!--盒子头-->
@@ -65,8 +74,8 @@
                     class="iconfont icon-xuanze1"></span></a>
             <div class="btn-group">
 
-                <a onclick="{return confirm('文件将放入回收站，确定删除吗？');};" class="btn btn-sm btn-default topdelete"
-                   href="deletefile?pathid=${nowpath.id}&checkpathids=&checkfileids=" title="删除">
+                <a class="btn btn-sm btn-default topdelete"
+                   title="删除" onclick="remove()">
                     <span class="iconfont icon-lajitong"></span>
                 </a>
                 <a onclick="{$('.creatpath').removeClass('diplaynone');};" class="btn btn-sm btn-default topcreatepath"
@@ -74,7 +83,7 @@
                     <span class="iconfont icon-xinzengwenjian"></span>
                 </a>
             </div>
-            <a class="btn btn-sm btn-default" href="filemanage" title="刷新"><span
+            <a class="btn btn-sm btn-default" id="refresh" th:onclick="'refresh('+${parentId}+')'" title="刷新"><span
                     class="iconfont icon-shuaxin"></span></a>
         </div>
 
@@ -107,7 +116,8 @@
 
 
                 <div th:each="cloudFile:${cloudFiles}" th:if="${cloudFile.isDirectory==1}">
-                    <div class="file-one">
+                    <div class="file-one" th:id="${cloudFile.fileId}"
+                         th:attr="data-isShare=${cloudFile.isShare},data-isTrash=${cloudFile.isTrash}">
                         <div class="file-img path">
 
                             <a class="folder" style="cursor:pointer;" th:onclick="'refresh('+${cloudFile.fileId}+')'">
@@ -115,7 +125,6 @@
                             </a>
 
                             <a class="folder" style="cursor:pointer;" th:onclick="'refresh('+${cloudFile.fileId}+')'">
-                                <input type="hidden" class="url" th:value="${cloudFile.fileId}"/>
                                 <img src="/fileimg/Folder.png"/>
                             </a>
                         </div>
@@ -147,7 +156,8 @@
                     </div>
                 </div>
                 <div th:each="cloudFile:${cloudFiles}" th:if="${cloudFile.isDirectory==0}">
-                    <div class="file-one">
+                    <div class="file-one" th:id="${cloudFile.fileId}"
+                         th:attr="data-isShare=${cloudFile.isShare},data-isTrash=${cloudFile.isTrash}">
                         <div class="file-img" style="cursor:pointer;">
                             <img th:if="${cloudFile.suffix=='mp4' or cloudFile.suffix=='rmvb'}"
                                  src="/fileimg/Video.png"/>
@@ -182,6 +192,16 @@
                 </div>
             </div>
         </div>
+
     </div>
 </div>
+<script>
+    if ($("#loadType").val() == 'trash') {
+
+        $('.folder').css({'pointer-events': ' none', 'cursor': 'default'});
+        $(' .topcreatepath').hide();
+    }
+
+
+</script>
 </html>
