@@ -76,11 +76,11 @@ public enum GlobalConfig {
         if (configSize.endsWith("K")) {
             return size;
         } else if (configSize.endsWith("KB")) {
-            return size / 1024;
+            return size * 1024;
         } else if (configSize.endsWith("M") || configSize.endsWith("MB")) {
-            return size / (1024 * 1024);
+            return size * (1024 * 1024);
         } else if (configSize.endsWith("G") || configSize.endsWith("GB")) {
-            return size / (1024 * 1024 * 1024);
+            return size * (1024 * 1024 * 1024);
         } else {
             return 1024 * 1024L;
         }

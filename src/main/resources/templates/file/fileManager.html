@@ -13,7 +13,7 @@
     <ul th:if="${loadType!='trash' and loadType!='share'}" class="nav nav-pills nav-stacked"
         style="padding:5px 0 5px 0;">
 
-        <li><a class="downloadfile">下载</a></li>
+        <li><a class="downloadfile " onclick="download()">下载</a></li>
         <li><a class="fileShare">共享</a></li>
         <li><a class="cancelShare">取消共享</a></li>
         <li><a class="menurename">重命名</a></li>
@@ -22,7 +22,7 @@
         <li><a onclick="remove()" class="loadtrash">删除</a></li>
     </ul>
     <ul th:if="${loadType=='share'}">
-        <li><a class="download">下载</a></li>
+        <li><a class="download" onclick="download()">下载</a></li>
     </ul>
     <ul th:if="${loadType=='trash'}" class="nav nav-pills nav-stacked" style="padding:5px 0 5px 0;">
         <li><a class="restore" onclick="restore()">还原</a></li>
@@ -170,7 +170,7 @@
                             <img th:if="${cloudFile.suffix=='zip'||cloudFile.suffix=='rar'||cloudFile.suffix=='7z'||cloudFile.suffix=='tar'||cloudFile.suffix=='taz'}"
                                  src="/fileimg/ZIP.png"/>
                             <img th:if="${cloudFile.suffix=='txt'}" src="/fileimg/Text.png"/>
-                            <img th:if="${cloudFile.suffix=='jpg'}" th:src="${cloudFile.filePath}"
+                            <img th:if="${cloudFile.suffix=='jpg'}" th:src="'/file/download/'+${cloudFile.fileId}"
                                  style="width: 100%;height: auto"/>
                         </div>
                         <div class="file-name">

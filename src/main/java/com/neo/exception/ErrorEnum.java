@@ -7,7 +7,8 @@ public enum ErrorEnum {
     EXPORT_ERROR("202", "导出失败"),
     FILE_TO_LARGE("501", "文件过大"),
     DATABASE_OPER_ERROR("301", "数据库操作异常"),
-    DUPLICATE_FILENAME("502", "文件名重复");
+    DUPLICATE_FILENAME("502", "文件名重复！"),
+    EMPTY_FILE("501", "文件不能为空！");
     private String code;
     private String message;
 

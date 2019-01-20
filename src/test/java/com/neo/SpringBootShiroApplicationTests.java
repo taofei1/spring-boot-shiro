@@ -1,10 +1,12 @@
 package com.neo;
 
 
+import com.neo.DTO.CloudFileDTO;
 import com.neo.entity.SyncFilePlan;
 import com.neo.mapper.GenMapper;
 import com.neo.model.Car;
 import com.neo.pojo.Directory;
+import com.neo.service.CloudFileService;
 import com.neo.service.FileInfoService;
 import com.neo.service.SyncFilePlanService;
 import lombok.extern.slf4j.Slf4j;
@@ -32,7 +34,8 @@ public class SpringBootShiroApplicationTests {
 
 	@Autowired
 	private FileInfoService fileInfoService;
-
+	@Autowired
+	private CloudFileService cloudFileService;
 	@Resource
 	private CacheManager cacheManager;
 	@Autowired
@@ -49,6 +52,9 @@ public class SpringBootShiroApplicationTests {
 		fileInfoService.findByFilePathAndSyncFilePlan("12321",syncFilePlan);
 
 
+	}
+	@Test
+	public void testre(){
 	}
 	@Test
 	public void testCache(){
@@ -92,6 +98,7 @@ public class SpringBootShiroApplicationTests {
 	public void create(){
 		log.info(genMapper.selectCreateTable("email").toString());
 	}
+
 
 
 }

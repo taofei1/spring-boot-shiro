@@ -1,10 +1,12 @@
 package com.neo.service;
 
+import com.neo.DTO.CloudFileDTO;
 import com.neo.enums.FileOperType;
 import com.neo.exception.BusinessException;
 import com.neo.pojo.CloudFile;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.io.File;
 import java.io.IOException;
 import java.util.List;
 
@@ -36,8 +38,13 @@ public interface CloudFileService {
 
     int moveFile(Long fileId, Long parentId) throws BusinessException;
 
-    boolean nameCanUse(String name, Long parentId) throws BusinessException;
 
     void deleteBatch(List<Long> ids) throws BusinessException;
+     boolean isAvailable(String name, Long parentId) throws BusinessException;
+
+     CloudFileDTO getAllChildren(Long fileId,boolean isOnlyDir);
+
+     List<CloudFile> getChildrenFiles(Long fileId);
+
 
 }

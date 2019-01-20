@@ -9,12 +9,17 @@ import com.neo.service.CloudFileService;
 import com.neo.util.Response;
 import com.neo.util.ShiroUtil;
 import com.neo.util.StringUtils;
+import org.apache.commons.io.IOUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
+import javax.servlet.http.HttpServletResponse;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
@@ -27,7 +32,7 @@ public class CloudFileController {
     @Autowired
     private CloudFileService cloudFileService;
 
-    //Ê×Ò³
+    //ï¿½ï¿½Ò³
     @GetMapping("/cloudFile")
     public String cloudForm(Map map) throws BusinessException {
         CloudFile cloudFile = new CloudFile();
@@ -47,7 +52,7 @@ public class CloudFileController {
     }
 
     /**
-     * ½øÈëÖ¸¶¨ÎÄ¼þ¼Ð
+     * ï¿½ï¿½ï¿½ï¿½Ö¸ï¿½ï¿½ï¿½Ä¼ï¿½ï¿½ï¿½
      *
      * @param cloudFile
      * @param map
@@ -60,7 +65,7 @@ public class CloudFileController {
         cloudFile.setUserId(ShiroUtil.getSysUser().getUid().longValue());
 
         List<CloudFile> cloudFiles = cloudFileService.selectPersonalOrShareAndNameLike(cloudFile);
-        //Ãû³Æ²»Îª¿ÕÔòÊÇËÑË÷£¬´ËÊ±µ¼º½Â·¾¢ÐèÒª¸Ä±ä
+        //ï¿½ï¿½ï¿½Æ²ï¿½Îªï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ê±ï¿½ï¿½ï¿½ï¿½Â·ï¿½ï¿½ï¿½ï¿½Òªï¿½Ä±ï¿½
         List<CloudFile> cloudFileList = new ArrayList<>();
         if (StringUtils.isNotEmpty(cloudFile.getFileName())) {
 
@@ -90,14 +95,14 @@ public class CloudFileController {
             list = new ArrayList();
         }
         CloudFile c = new CloudFile();
-        c.setFileName("\"" + fileName + "\"" + "µÄËÑË÷½á¹û");
+        c.setFileName("\"" + fileName + "\"" + "ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½");
         list.add(c);
         return list;
 
     }
 
     /**
-     * ·ÖÏíÒ³ÃæµÄÊ×Ò³
+     * ï¿½ï¿½ï¿½ï¿½Ò³ï¿½ï¿½ï¿½ï¿½ï¿½Ò³
      *
      * @param fileName
      * @return
@@ -111,7 +116,7 @@ public class CloudFileController {
         map.put("cloudFiles", cloudFiles);
         List<CloudFile> navigation = new ArrayList<>();
         CloudFile cloudFile = new CloudFile();
-        cloudFile.setFileName("¹²ÏíÎÄ¼þ");
+        cloudFile.setFileName("ï¿½ï¿½ï¿½ï¿½ï¿½Ä¼ï¿½");
         navigation.add(cloudFile);
         if (StringUtils.isNotEmpty(fileName)) {
             navigation = nav(fileName, navigation);
@@ -122,7 +127,7 @@ public class CloudFileController {
     }
 
     /**
-     * ²éÑ¯Ã¿¸ö·ÖÀà¿ÉËÑË÷
+     * ï¿½ï¿½Ñ¯Ã¿ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
      * @param cate
      * @param fileName
      * @return
@@ -149,7 +154,7 @@ public class CloudFileController {
     }
 
     /**
-     * ²éÑ¯¿É¼ûµÄÀ¬»ø
+     * ï¿½ï¿½Ñ¯ï¿½É¼ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
      * @param fileName
      * @return
      */
@@ -160,7 +165,7 @@ public class CloudFileController {
         map.put("cloudFiles", cloudFiles);
         List<CloudFile> navigation = new ArrayList<>();
         CloudFile cloudFile = new CloudFile();
-        cloudFile.setFileName("À¬»ø");
+        cloudFile.setFileName("ï¿½ï¿½ï¿½ï¿½");
         navigation.add(cloudFile);
         if (StringUtils.isNotEmpty(fileName)) {
             map.put("searchValue", fileName);
@@ -172,7 +177,7 @@ public class CloudFileController {
     @PostMapping("/verifyName")
     @ResponseBody
     public Response verifyName(String name, Long parentId) throws BusinessException {
-        if (!cloudFileService.nameCanUse(name, parentId)) {
+        if (!cloudFileService.isAvailable(name, parentId)) {
             return Response.fail(ErrorEnum.DUPLICATE_FILENAME);
         }
         return Response.success();
@@ -188,6 +193,9 @@ public class CloudFileController {
     @PostMapping("/upload")
     @ResponseBody
     public Response uploadFile(Long parentId, MultipartFile multipartFile, Map map) throws BusinessException, IOException {
+        if(StringUtils.isNull(multipartFile)){
+            return Response.fail(ErrorEnum.EMPTY_FILE);
+        }
         cloudFileService.uploadFile(parentId, multipartFile);
         CloudFile cloudFile = new CloudFile();
         cloudFile.setParentId(parentId);
@@ -256,6 +264,27 @@ public class CloudFileController {
         cloudFile.setUserId(ShiroUtil.getSysUser().getUid().longValue());
         map.put("cloudFile", cloudFile);
         return "forward:/" +prefix+"/all";
+    }
+
+    @RequestMapping("/download/{id}")
+    public void download(@PathVariable("id") Long fileId, HttpServletResponse response) throws IOException {
+        List<CloudFile> files=cloudFileService.getChildrenFiles(fileId);
+        response.setContentType("application/octet-stream");
+        FileInputStream fis = null;
+        try {
+            for (CloudFile file : files) {
+                fis = new FileInputStream(new File(file.getFilePath()));
+                response.setHeader("Content-Disposition", "attachment; filename=" + file.getFileName());
+                IOUtils.copy(fis, response.getOutputStream());
+
+            }
+            response.flushBuffer();
+
+        }finally {
+            if(fis!=null){
+                fis.close();
+            }
+        }
     }
 
 

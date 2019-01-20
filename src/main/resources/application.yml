@@ -59,6 +59,11 @@ spring:
 #      ehcache:
 #        config: classpath:/config/ehcache.xml
     type: redis
+
+  http:
+    multipart:
+      max-file-size: 100mb
+      max-request-size: 1000mb
 server:
   tomcat:
     uri-encoding: UTF-8

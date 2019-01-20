@@ -1,5 +1,6 @@
 package com.neo.service.impl;
 
+import com.neo.DTO.CloudFileDTO;
 import com.neo.config.GlobalConfig;
 import com.neo.enums.FileOperType;
 import com.neo.enums.FileType;
@@ -13,6 +14,7 @@ import com.neo.util.ShiroUtil;
 import com.neo.util.StringUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.FilenameUtils;
+import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.ObjectUtils;
@@ -125,7 +127,7 @@ public class CloudFileServiceImpl implements CloudFileService {
         checkAccess(cf, fileOperType);
         //还原的时候需要检测原目录是否有重名文件
         if (fileOperType == FileOperType.RESTORE) {
-            if (!nameCanUse(cf.getFileName(), cf.getParentId())) {
+            if (!isAvailable(cf.getFileName(), cf.getParentId())) {
                 throw new BusinessException(ErrorEnum.DUPLICATE_FILENAME);
             }
         }
@@ -154,7 +156,7 @@ public class CloudFileServiceImpl implements CloudFileService {
         CloudFile cloudFile = new CloudFile();
         cloudFile.setUserId(getCurrentUserId());
         cloudFile.setContentType(multipartFile.getContentType());
-        cloudFile.setFileName(multipartFile.getOriginalFilename());
+        cloudFile.setFileName(getAvailableName(multipartFile.getOriginalFilename(),parentDirectoryId));
         cloudFile.setFileOrder(getMaxOrderByUserAndIsDirectory(parentDirectoryId, 0));
         cloudFile.setSuffix(suffix);
         cloudFile.setIsDirectory(0);
@@ -175,7 +177,7 @@ public class CloudFileServiceImpl implements CloudFileService {
         parent.setFileName(null);
         //判断当前目录下是否有同名文件
 
-        if (!nameCanUse(fileName, parent.getFileId())) {
+        if (!isAvailable(fileName, parent.getFileId())) {
             throw new BusinessException(ErrorEnum.DUPLICATE_FILENAME);
         }
         cl.setFileName(fileName);
@@ -233,21 +235,6 @@ public class CloudFileServiceImpl implements CloudFileService {
         cl.setParentId(newParentId);
 
         return cloudFileMapper.updateOne(cl);
-    }
-
-    @Override
-    public boolean nameCanUse(String name, Long parentId) throws BusinessException {
-        CloudFile cl = cloudFileMapper.selectByFileId(parentId);
-        checkAccess(cl, null);
-        List<CloudFile> cls = cloudFileMapper.selectAllByUserIdAndParentId(getCurrentUserId(), parentId, 0);
-        for (CloudFile cloudFile1 : cls) {
-            if (cloudFile1.getFileName().equals(name)) {
-                return false;
-            }
-        }
-        return true;
-
-
     }
 
     @Override
@@ -369,12 +356,7 @@ public class CloudFileServiceImpl implements CloudFileService {
             throw new BusinessException(ErrorEnum.PARAM_ERROR);
         }
         //如果名称不可用寻找新名称:新建文件夹(num)
-        int num = 1;
-        String srcName = directoryName;
-        while (!nameCanUse(directoryName, parentId)) {
-            directoryName = srcName + "(" + (num++) + ")";
-
-        }
+        directoryName=getAvailableName(directoryName,parentId);
 
         CloudFile cloudFile = new CloudFile();
         cloudFile.setParentId(parentId);
@@ -389,8 +371,114 @@ public class CloudFileServiceImpl implements CloudFileService {
         insertOne(cloudFile);
 
     }
+    public String getAvailableName(String name,Long parentId) throws BusinessException {
+        int num=1;
+
+        String srcName=name;
+        while (!isAvailable(srcName, parentId)) {
+            if(name.contains(".")){
+                srcName=name.substring(0,name.lastIndexOf("."))+ "(" + (num++) + ")"+name.substring(name.lastIndexOf("."));
+            }else {
+                srcName = name + "(" + (num++) + ")";
+            }
+
+        }
+        return srcName;
+    }
+    @Override
+    public boolean isAvailable(String name, Long parentId) throws BusinessException {
+        CloudFile cl = cloudFileMapper.selectByFileId(parentId);
+        checkAccess(cl, null);
+        List<CloudFile> cls = cloudFileMapper.selectAllByUserIdAndParentId(getCurrentUserId(), parentId, 0);
+        for (CloudFile cloudFile1 : cls) {
+            if (cloudFile1.getFileName().equals(name)) {
+                return false;
+            }
+        }
+        return true;
 
 
+    }
+
+    /**
+     * 获取文件夹树形结构
+     * @param fileId
+     * @param isOnlyDir false:都是要  true：要文件夹
+     * @return
+     */
+    @Override
+    public CloudFileDTO getAllChildren(Long fileId,boolean isOnlyDir) {
+        CloudFile cf=cloudFileMapper.selectByFileId(fileId);
+        CloudFileDTO cfd=new CloudFileDTO();
+        BeanUtils.copyProperties(cf,cfd);
+        if(cf.getIsDirectory()==0){
+            return cfd;
+        }else{
+
+            recursion(fileId,cfd,isOnlyDir);
+        }
+        return cfd;
+
+    }
+
+    @Override
+    public List<CloudFile> getChildrenFiles(Long fileId) {
+        CloudFile cloudFile = selectByFileId(fileId);
+
+        List<CloudFile> files=new ArrayList<>();
+        if(cloudFile.getIsDirectory()==0){
+            files.add(cloudFile);
+            return files;
+        }else{
+            CloudFileDTO cfd=getAllChildren(fileId,false);
+            getAllChildrenFiles(cfd,files);
+        }
+        return files;
+    }
+
+    private void getAllChildrenFiles(CloudFileDTO cloudFileDTO, List<CloudFile> files) {
+        List<CloudFileDTO> children = cloudFileDTO.getChildren();
+        if(!StringUtils.isEmpty(children)){
+            children.forEach(c->{
+                if(c.getIsDirectory()==0){
+                    files.add(c);
+                }else{
+                    getAllChildrenFiles(c,files);
+                }
+            });
+        }
+    }
+
+
+    /**
+     * 遍历获得
+     * @param parentId
+     * @param cfd
+     */
+    public void recursion(Long parentId,CloudFileDTO cfd,boolean isOnlyDir){
+        List<CloudFile> cloudFiles=cloudFileMapper.selectAllByUserIdAndParentId(getCurrentUserId(),parentId,0);
+        cfd.setChildren(translate(cloudFiles,isOnlyDir));
+        for(CloudFileDTO cloudFileDTO:cfd.getChildren()){
+             if(cloudFileDTO.getIsDirectory()==1){
+                 recursion(cloudFileDTO.getFileId(),cloudFileDTO,isOnlyDir);
+             }
+        }
+
+
+    }
+    public List<CloudFileDTO> translate(List<CloudFile> src,boolean isOnlyDir){
+        List<CloudFileDTO> tarlist=new ArrayList<>();
+        src.forEach(a->{
+            if(isOnlyDir==false||a.getIsDirectory()==1) {
+                CloudFileDTO cfd = new CloudFileDTO();
+                BeanUtils.copyProperties(a, cfd);
+                tarlist.add(cfd);
+            }
+
+
+        });
+        return tarlist;
+    }
     public Long getMaxOrderByUserAndIsDirectory(Long parentDirectoryId, Integer isDirectory) {
         Long maxOrder = cloudFileMapper.selectMaxIndexCurrentPage(parentDirectoryId, getCurrentUserId(), isDirectory);
         if (maxOrder == null) {

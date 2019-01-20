@@ -96,22 +96,7 @@ $(".loadfiletype").on("click", ".loadokshare", function () {
     $(".loadfiletype").load("fileloadshare", {type: loadtype, 'checkfileids[]': checkfileids});
 
 });
-/**
- * 回收战load js
- */
-$(".loadfiletype").on("click", ".loadtrash", function () {
-    var checkpathids = new Array();
-    var checkfileids = new Array();
-    checkedpaths2(checkpathids, checkfileids);
 
-    var loadtype = $(".loadfiletype .box-header .loadfilestype").val();
-
-    $(".loadfiletype").load("fileloadtrashfile", {
-        type: loadtype,
-        'checkpathids[]': checkpathids,
-        'checkfileids[]': checkfileids
-    });
-});
 
 $(".loadfiletype").on("click", ".filereturnback", function () {
     var checkpathids = new Array();
@@ -218,29 +203,41 @@ $(".loadfiletype").on("click", ".okfilerename", function () {
         pathid: pathid
     })
 });
-
-
 /**
- * 得到选择的 文件和文件夹
- * @param pathids
- * @param fileids
- * @returns
+ *
  */
-function checkedpaths2(pathids, fileids) {
-    var checkedpaths = $(".file-one.file-one-check");
-    var i = 0;
-    var j = 0;
-    console.log(checkedpaths);
-    checkedpaths.each(function () {
-        if ($(this).find(".file-img").hasClass("path")) {
-            pathids[i] = $(this).find(".pathmessage").val();
-            i += 1;
-        } else {
-            if (!$(this).hasClass("diplaynone")) {
-                fileids[j] = $(this).find(".filemessage").val();
-                console.log($(this).find(".filemessage").val());
-                j += 1;
+$("#upload").click(function () {
+    var formData = new FormData();
+    formData.append("multipartFile", document.getElementById("files").files[0]);
+    formData.append("parentId",$("#currentPathId").val());
+    $.ajax({
+        url: prefix+"/upload",
+        type: "POST",
+        data: formData,
+        /**
+         *必须false才会自动加上正确的Content-Type
+         */
+        contentType: false,
+        /**
+         * 必须false才会避开jQuery对 formdata 的默认处理
+         * XMLHttpRequest会对 formdata 进行正确的处理
+         */
+        processData: false,
+        success: function (data) {
+            if (data.code=='00') {
+                msgSuccess("上传成功");
+                refresh($('#currentPathId').val());
+            }else{
+                msgError(data.data);
             }
         }
     });
+});
+
+function download() {
+    console.log(111);
+    var checkedFilesId = getCheckedFilesId();
+    window.location=prefix+"/download/"+checkedFilesId[0];
 }
+
+
