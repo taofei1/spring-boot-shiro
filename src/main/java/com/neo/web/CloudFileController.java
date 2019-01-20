@@ -274,6 +274,11 @@ public class CloudFileController {
         try {
             for (CloudFile file : files) {
                 fis = new FileInputStream(new File(file.getFilePath()));
+             /*   byte[] b=new byte[1024];
+                int i;
+                while((i=fis.read(b))!=-1){
+                    response.getOutputStream().write(b,0,i);
+                }*/
                 response.setHeader("Content-Disposition", "attachment; filename=" + file.getFileName());
                 IOUtils.copy(fis, response.getOutputStream());
 
