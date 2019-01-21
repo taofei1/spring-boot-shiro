@@ -119,7 +119,12 @@ $(".loadfiletype").on("click", ".filereturnback", function () {
  */
 function refresh(fileId) {
     if (fileId != null && fileId != "") {
-        $(".loadfiletype").load(prefix + '/all?fileId=' + fileId);
+        var loadType = $("#loadType").val()
+        if (loadType == 'share') {
+            $(".loadfiletype").load(prefix + '/all?isShare=1&fileId=' + fileId);
+        } else {
+            $(".loadfiletype").load(prefix + '/all?fileId=' + fileId);
+        }
     } else {
         //id不存在则是分类或者搜索结果标签
 
@@ -132,6 +137,7 @@ function refresh(fileId) {
 function restore() {
     var checkedFilesId = getCheckedFilesId();
     $.post(prefix + "/restore", {ids: checkedFilesId}, function (res) {
+
         if (res.code != '00') {
             msgError(res.data);
         } else {
@@ -140,6 +146,42 @@ function restore() {
     })
 }
 
+function share() {
+    var checkedFilesId = getCheckedFilesId();
+    $.post(prefix + "/share", {ids: checkedFilesId}, function (res) {
+
+        if (res.code != '00') {
+            msgError(res.data);
+        } else {
+            msgSuccess('分享文件成功！');
+        }
+    });
+}
+
+function cancelShare() {
+    var checkedFilesId = getCheckedFilesId();
+    $.post(prefix + "/cancelShare", {ids: checkedFilesId}, function (res) {
+        if (res.code != '00') {
+            msgError(res.data);
+        } else {
+            msgSuccess('取消分享成功！');
+        }
+    });
+}
+
+function rename(a) {
+    var fileId = $(a).parent("button").prev().val();
+    var newName = $(a).parent("button").prev().prev().val();
+    console.log(fileId + newName);
+    $.post(prefix + '/rename/' + fileId, {newName: newName}, function (res) {
+        if (res.code != '00') {
+            msgError(res.data);
+
+        }
+        refresh($('#parentId').val());
+    })
+
+}
 function remove() {
     var names = [];
     var checkedFilesId = getCheckedFilesId(names);
@@ -181,28 +223,7 @@ function createDir() {
 /**
  * 重命名load js
  */
-$(".loadfiletype").on("click", ".okfilerename", function () {
-    var checkedfile = $(this).parents(".file-one.file-one-check");
-    var loadtype = $(".loadfiletype .box-header .loadfilestype").val();
 
-    var renamefp = checkedfile.find(".renamefp").val();
-    var creatpathinput = checkedfile.find(".creatpathinput").val();
-    var isfile = checkedfile.find(".isfile").val();
-    var pathid = checkedfile.find(".pathid").val();
-
-    console.log(renamefp);
-    console.log(creatpathinput);
-    console.log(isfile);
-    console.log(pathid);
-
-    $(".loadfiletype").load("fileloadrename", {
-        type: loadtype,
-        renamefp: renamefp,
-        creatpathinput: creatpathinput,
-        isfile: isfile,
-        pathid: pathid
-    })
-});
 /**
  *
  */
@@ -234,10 +255,6 @@ $("#upload").click(function () {
     });
 });
 
-function download() {
-    console.log(111);
-    var checkedFilesId = getCheckedFilesId();
-    window.location=prefix+"/download/"+checkedFilesId[0];
-}
+
 
 

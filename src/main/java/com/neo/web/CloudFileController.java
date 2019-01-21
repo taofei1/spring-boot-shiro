@@ -21,6 +21,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -32,7 +33,6 @@ public class CloudFileController {
     @Autowired
     private CloudFileService cloudFileService;
 
-    //ï¿½ï¿½Ò³
     @GetMapping("/cloudFile")
     public String cloudForm(Map map) throws BusinessException {
         CloudFile cloudFile = new CloudFile();
@@ -52,7 +52,7 @@ public class CloudFileController {
     }
 
     /**
-     * ï¿½ï¿½ï¿½ï¿½Ö¸ï¿½ï¿½ï¿½Ä¼ï¿½ï¿½ï¿½
+     *
      *
      * @param cloudFile
      * @param map
@@ -65,7 +65,7 @@ public class CloudFileController {
         cloudFile.setUserId(ShiroUtil.getSysUser().getUid().longValue());
 
         List<CloudFile> cloudFiles = cloudFileService.selectPersonalOrShareAndNameLike(cloudFile);
-        //ï¿½ï¿½ï¿½Æ²ï¿½Îªï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ê±ï¿½ï¿½ï¿½ï¿½Â·ï¿½ï¿½ï¿½ï¿½Òªï¿½Ä±ï¿½
+        //?????????????????????????¡¤????????
         List<CloudFile> cloudFileList = new ArrayList<>();
         if (StringUtils.isNotEmpty(cloudFile.getFileName())) {
 
@@ -95,14 +95,14 @@ public class CloudFileController {
             list = new ArrayList();
         }
         CloudFile c = new CloudFile();
-        c.setFileName("\"" + fileName + "\"" + "ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½");
+        c.setFileName("\"" + fileName + "\"" + "µÄËÑË÷½á¹û");
         list.add(c);
         return list;
 
     }
 
     /**
-     * ï¿½ï¿½ï¿½ï¿½Ò³ï¿½ï¿½ï¿½ï¿½ï¿½Ò³
+     *¹²ÏíÎÄ¼þÊ×Ò³
      *
      * @param fileName
      * @return
@@ -116,7 +116,7 @@ public class CloudFileController {
         map.put("cloudFiles", cloudFiles);
         List<CloudFile> navigation = new ArrayList<>();
         CloudFile cloudFile = new CloudFile();
-        cloudFile.setFileName("ï¿½ï¿½ï¿½ï¿½ï¿½Ä¼ï¿½");
+        cloudFile.setFileName("¹²Ïí");
         navigation.add(cloudFile);
         if (StringUtils.isNotEmpty(fileName)) {
             navigation = nav(fileName, navigation);
@@ -127,7 +127,7 @@ public class CloudFileController {
     }
 
     /**
-     * ï¿½ï¿½Ñ¯Ã¿ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
+     * ·ÖÀà²åÐðÄã¿ÉËÑË÷
      * @param cate
      * @param fileName
      * @return
@@ -154,7 +154,7 @@ public class CloudFileController {
     }
 
     /**
-     * ï¿½ï¿½Ñ¯ï¿½É¼ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
+     * À¬»ø
      * @param fileName
      * @return
      */
@@ -165,7 +165,7 @@ public class CloudFileController {
         map.put("cloudFiles", cloudFiles);
         List<CloudFile> navigation = new ArrayList<>();
         CloudFile cloudFile = new CloudFile();
-        cloudFile.setFileName("ï¿½ï¿½ï¿½ï¿½");
+        cloudFile.setFileName("»ØÊÕÕ¾");
         navigation.add(cloudFile);
         if (StringUtils.isNotEmpty(fileName)) {
             map.put("searchValue", fileName);
@@ -205,16 +205,20 @@ public class CloudFileController {
     }
 
 
-    @PostMapping("/share/{id}")
-    public Response shareFile(@PathVariable Long id) throws BusinessException {
-        cloudFileService.updateOne(id, FileOperType.SHARE);
+    @PostMapping("/share")
+    public Response shareFile(@RequestParam("ids[]") List<Long> ids) throws BusinessException {
+        for (Long id : ids) {
+            cloudFileService.updateOne(id, FileOperType.SHARE);
+        }
         return Response.success();
     }
 
     @ResponseBody
-    @PostMapping("/notshare/{id}")
-    public Response notShareFile(@PathVariable Long id) throws BusinessException {
-        cloudFileService.updateOne(id, FileOperType.NOTSHARE);
+    @PostMapping("/cancelShare")
+    public Response notShareFile(@RequestParam("ids[]") List<Long> ids) throws BusinessException {
+        for (Long id : ids) {
+            cloudFileService.updateOne(id, FileOperType.CANCELSHARE);
+        }
         return Response.success();
     }
 
@@ -246,14 +250,23 @@ public class CloudFileController {
         return Response.success();
     }
 
-    @PostMapping("/modifyName/{id}")
-    public String remove(@PathVariable Long id, String newName, Long parentId, Map map) throws BusinessException {
+    @PostMapping("/rename/{id}")
+    @ResponseBody
+    public Response rename(@PathVariable("id") Long id, String newName) throws BusinessException {
+        CloudFile cloudFile = cloudFileService.selectByFileId(id);
+        if (cloudFile == null) {
+            return Response.fail(ErrorEnum.DATA_NOT_FOUND);
+        }
+        if (cloudFile.getFileName().equals(newName)) {
+            return Response.success();
+        }
+        boolean isAvailable = cloudFileService.isAvailable(newName, cloudFile.getParentId());
         cloudFileService.changeName(id, newName);
-        CloudFile cloudFile = new CloudFile();
-        cloudFile.setFileId(parentId);
-        cloudFile.setUserId(ShiroUtil.getSysUser().getUid().longValue());
-        map.put("cloudFile", cloudFile);
-        return "forward:/" +prefix+"/all";
+        if (isAvailable) {
+            return Response.success();
+        } else {
+            return Response.fail(ErrorEnum.DUPLICATE_FILENAME);
+        }
     }
 
     @PostMapping("/move/{src}")
@@ -267,24 +280,25 @@ public class CloudFileController {
     }
 
     @RequestMapping("/download/{id}")
-    public void download(@PathVariable("id") Long fileId, HttpServletResponse response) throws IOException {
-        List<CloudFile> files=cloudFileService.getChildrenFiles(fileId);
+    public void download(@PathVariable("id") String fileId, HttpServletResponse response) throws IOException {
+        String[] ids = fileId.split(",");
         response.setContentType("application/octet-stream");
         FileInputStream fis = null;
         try {
-            for (CloudFile file : files) {
-                fis = new FileInputStream(new File(file.getFilePath()));
-             /*   byte[] b=new byte[1024];
-                int i;
-                while((i=fis.read(b))!=-1){
-                    response.getOutputStream().write(b,0,i);
-                }*/
-                response.setHeader("Content-Disposition", "attachment; filename=" + file.getFileName());
+            //Èç¹ûÊÇµ¥¸öÎÄ¼þÖ±½ÓÏÂÔØ·ñÔò°ü×°³Ézip
+            if (ids.length == 1 && cloudFileService.selectByFileId(Long.valueOf(ids[0])).getIsDirectory() == 0) {
+                CloudFile cloudFile = cloudFileService.selectByFileId(Long.valueOf(ids[0]));
+                response.setHeader("Content-Disposition", "attachment; filename=" + URLEncoder.encode(cloudFileService.selectByFileId(Long.valueOf(ids[0])).getFileName(), "UTF-8"));
+                fis = new FileInputStream(cloudFile.getFilePath());
                 IOUtils.copy(fis, response.getOutputStream());
+                response.flushBuffer();
+            } else {
 
+                byte[] data = cloudFileService.generateZip(fileId);
+                response.setHeader("Content-Disposition", "attachment; filename=" + URLEncoder.encode("ÏÂÔØ.zip", "UTF-8"));
+                response.addHeader("Content-Length", "" + data.length);
+                IOUtils.write(data, response.getOutputStream());
             }
-            response.flushBuffer();
-
         }finally {
             if(fis!=null){
                 fis.close();
