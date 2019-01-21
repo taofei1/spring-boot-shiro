@@ -5,7 +5,18 @@
     a {
         cursor: pointer;
     }
+
+    .file-img img {
+        width: auto;
+        height: 100%;
+    }
 </style>
+<script>
+    function download() {
+        console.log(11);
+
+    }
+</script>
 <input type="hidden" id="loadType" th:value="${loadType}"/>
 <input type="hidden" id="searchValue" th:value="${searchValue}"/>
 <input type="hidden" id="currentPathId" th:value="${parentId}">
@@ -13,16 +24,18 @@
     <ul th:if="${loadType!='trash' and loadType!='share'}" class="nav nav-pills nav-stacked"
         style="padding:5px 0 5px 0;">
 
-        <li><a class="downloadfile " onclick="download()">下载</a></li>
-        <li><a class="fileShare">共享</a></li>
-        <li><a class="cancelShare">取消共享</a></li>
+        <li><a onclick="{ var ids=getCheckedFilesId();
+        window.location='/file/download/'+ids.join(',');}">下载</a></li>
+        <li><a class="fileShare" onclick="share()">共享</a></li>
+        <li><a class="cancelShare" onclick="cancelShare()">取消共享</a></li>
         <li><a class="menurename">重命名</a></li>
         <li><a class="movefile">移动到</a></li>
         <li><a class="copyfile">复制到</a></li>
         <li><a onclick="remove()" class="loadtrash">删除</a></li>
     </ul>
     <ul th:if="${loadType=='share'}">
-        <li><a class="download" onclick="download()">下载</a></li>
+        <li><a onclick="{ var ids=getCheckedFilesId();
+        window.location='/file/download/'+ids.join(',');}">下载</a></li>
     </ul>
     <ul th:if="${loadType=='trash'}" class="nav nav-pills nav-stacked" style="padding:5px 0 5px 0;">
         <li><a class="restore" onclick="restore()">还原</a></li>
@@ -115,8 +128,8 @@
                 </div>
 
 
-                <div th:each="cloudFile:${cloudFiles}" th:if="${cloudFile.isDirectory==1}">
-                    <div class="file-one" th:id="${cloudFile.fileId}"
+                <div th:each="cloudFile:${cloudFiles}">
+                    <div class="file-one" th:id="${cloudFile.fileId}" th:if="${cloudFile.isDirectory==1}"
                          th:attr="data-isShare=${cloudFile.isShare},data-isTrash=${cloudFile.isTrash}">
                         <div class="file-img path">
 
@@ -135,36 +148,34 @@
 
                             <div class="pathtextarea rename diplaynone"
                                  style="position: absolute;top: 97px;left: -5px;z-index:100;">
-                                <form action="rename">
-                                    <input class="creatpathinput" type="text" name="name" value="2"/>
-                                    <input type="hidden" name="renamefp" value=""/>
-                                    <input type="hidden" name="pathid" value=""/>
-                                    <input type="hidden" name="isfile" value="false"/>
-                                    <button class="btn btn-default">
-                                        <em class="glyphicon glyphicon-ok" style="font-size: 12px;"></em>
+                                <input class="creatpathinput" name="name" th:value="${cloudFile.fileName}"/>
+                                <input type="hidden" th:value="${cloudFile.fileId}">
+                                <button class="btn btn-default">
+                                    <em class="glyphicon glyphicon-ok" style="font-size: 12px;"
+                                        onclick="rename(this)"></em>
                                     </button>
-                                    <span class="btn btn-default">
-					<em class="glyphicon glyphicon-remove cansalcreate" style="font-size: 12px;"></em>
-				</span>
-                                </form>
+                                <span class="btn btn-default">
+                                        <em class="glyphicon glyphicon-remove" onclick="cancel(this)"
+                                            style="font-size: 12px;"></em>
+				                    </span>
                             </div>
                         </div>
-                        <input type="hidden" class="pathmessage" value="${path.id}">
                         <span class="file-check">
 								<span class="iconfont icon-xuanze" style="height:1.5em;width:1.5em"></span>
 							</span>
                     </div>
-                </div>
-                <div th:each="cloudFile:${cloudFiles}" th:if="${cloudFile.isDirectory==0}">
-                    <div class="file-one" th:id="${cloudFile.fileId}"
+                    <!-- </div>
+                     <div th:each="cloudFile:${cloudFiles}" th:if="${cloudFile.isDirectory==0}">-->
+                    <div class="file-one" th:id="${cloudFile.fileId}" th:if="${cloudFile.isDirectory==0}"
                          th:attr="data-isShare=${cloudFile.isShare},data-isTrash=${cloudFile.isTrash}">
                         <div class="file-img" style="cursor:pointer;">
-                            <img th:if="${cloudFile.suffix=='mp4' or cloudFile.suffix=='rmvb'}"
+                            <img th:if="${cloudFile.suffix=='mp4' or cloudFile.suffix=='rmvb' or cloudFile.suffix=='rm' or cloudFile.suffix=='awm' or cloudFile.suffix=='avi' or cloudFile.suffix=='mkv'}"
                                  src="/fileimg/Video.png"/>
                             <img th:if="${#strings.contains(cloudFile.contentType,'audio')}" src="/fileimg/Music.png"/>
                             <img th:if="${cloudFile.suffix=='pdf'}" src="/fileimg/PDF.png"/>
                             <img th:if="${cloudFile.suffix=='exe'}" src="/fileimg/exe.png"/>
-                            <img th:if="${cloudFile.suffix=='java'}" src="/fileimg/exe.png"/>
+                            <img th:if="${cloudFile.suffix=='js'}" src="/fileimg/js.png"/>
+                            <img th:if="${cloudFile.suffix=='java'}" src="/fileimg/java.png"/>
                             <img th:if="${cloudFile.suffix=='doc'||cloudFile.suffix=='docx'}" src="/fileimg/word.png"/>
                             <img th:if="${cloudFile.suffix=='xlxs'||cloudFile.suffix=='xls'}" src="/fileimg/excel.png"/>
                             <img th:if="${cloudFile.suffix=='zip'||cloudFile.suffix=='rar'||cloudFile.suffix=='7z'||cloudFile.suffix=='tar'||cloudFile.suffix=='taz'}"
@@ -172,6 +183,7 @@
                             <img th:if="${cloudFile.suffix=='txt'}" src="/fileimg/Text.png"/>
                             <img th:if="${cloudFile.suffix=='jpg'}" th:src="'/file/download/'+${cloudFile.fileId}"
                                  style="width: 100%;height: auto"/>
+                            <img th:else src="/fileimg/unknown.png">
                         </div>
                         <div class="file-name">
                             <div class="filename">
@@ -179,15 +191,15 @@
                             </div>
                             <div class="pathtextarea rename diplaynone"
                                  style="position: absolute;top: 97px;left: -5px;z-index:100;">
-                                <form action="rename">
-                                    <input class="creatpathinput" type="text" name="name" value="${file.fileName}"/>
+                                <input class="creatpathinput" name="name" th:value="${cloudFile.fileName}"/>
+                                <input type="hidden" th:value="${cloudFile.fileId}">
                                     <button class="btn btn-default">
-                                        <em class="glyphicon glyphicon-ok" style="font-size: 12px;"></em>
+                                        <em class="glyphicon glyphicon-ok" style="font-size: 12px;"
+                                            onclick="rename(this)"></em>
                                     </button>
                                     <span class="btn btn-default">
-				<em class="glyphicon glyphicon-remove cansalcreate" style="font-size: 12px;"></em>
+				<em class="glyphicon glyphicon-remove" onclick="cancel(this)" style="font-size: 12px;"></em>
 			</span>
-                                </form>
                             </div>
                         </div>
                         <span class="file-check">

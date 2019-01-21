@@ -43,6 +43,11 @@ $(".loadfiletype").on("click", ".allcheck", function () {
     }
 });
 
+function cancel() {
+    var checked = $('.loadfiletype .file-one.file-one-check');
+    checked.find('.filename').removeClass('diplaynone');
+    checked.find('.rename').addClass('diplaynone');
+}
 /**
  * 右键菜单JS
  * $(".file-box .file-one").mousedown(function(e){
@@ -100,17 +105,11 @@ $(document).click(function (e) {
  * $(".loadfiletype").on("click",".menurename",function(){
  */
 $(".loadfiletype").on("click", ".menurename", function () {
-    console.log("重命名！~~");
     var checked = $(".loadfiletype .file-one.file-one-check");
     checked.find(".filename").addClass("diplaynone");
     checked.find(".rename").removeClass("diplaynone");
 });
-/*$(".loadfiletype").on("click",".cansalcreate",function(){
-	var checked =$(".loadfiletype .file-one");
-	console.log(checked);
-	checked.find(".rename").addClass("diplaynone");
-	checked.find(".filename").removeClass("diplaynone");
-});*/
+
 
 /**
  * 文件移动、复制文件使用模态框 JS

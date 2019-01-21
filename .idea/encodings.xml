@@ -12,6 +12,7 @@
     <file url="file://$PROJECT_DIR$/src/main/java/com/neo/ftp/FtpUtils.java" charset="GBK" />
     <file url="file://$PROJECT_DIR$/src/main/java/com/neo/listener/EventListener.java" charset="GBK" />
     <file url="file://$PROJECT_DIR$/src/main/java/com/neo/quartz/Monitor.java" charset="GBK" />
+    <file url="file://$PROJECT_DIR$/src/main/java/com/neo/service/impl/CloudFileServiceImpl.java" charset="GBK" />
     <file url="file://$PROJECT_DIR$/src/main/java/com/neo/sync/SyncFile1.java" charset="GBK" />
     <file url="file://$PROJECT_DIR$/src/main/java/com/neo/sync/SyncFile2.java" charset="GBK" />
     <file url="file://$PROJECT_DIR$/src/main/java/com/neo/task/TaskUtils.java" charset="GBK" />
@@ -23,9 +24,12 @@
     <file url="file://$PROJECT_DIR$/src/main/java/com/neo/util/Msg.java" charset="GBK" />
     <file url="file://$PROJECT_DIR$/src/main/java/com/neo/util/Response.java" charset="GBK" />
     <file url="file://$PROJECT_DIR$/src/main/java/com/neo/util/WinRARUtil.java" charset="GBK" />
+    <file url="file://$PROJECT_DIR$/src/main/java/com/neo/web/CloudFileController.java" charset="GBK" />
     <file url="file://$PROJECT_DIR$/src/main/java/com/neo/web/CodeTableController.java" charset="GBK" />
+    <file url="file://$PROJECT_DIR$/src/main/java/com/neo/web/KaptchaController.java" charset="GBK" />
     <file url="file://$PROJECT_DIR$/src/main/java/com/neo/web/LoginLogController.java" charset="GBK" />
     <file url="file://$PROJECT_DIR$/src/main/java/com/neo/web/MailConfigController.java" charset="GBK" />
+    <file url="file://$PROJECT_DIR$/src/main/java/com/neo/web/MenuController.java" charset="GBK" />
     <file url="file://$PROJECT_DIR$/src/main/java/com/neo/web/OperLogController.java" charset="GBK" />
     <file url="file://$PROJECT_DIR$/src/main/java/com/neo/web/ServerInfoController.java" charset="GBK" />
     <file url="file://$PROJECT_DIR$/src/main/java/com/neo/web/SyncFilePlanController.java" charset="GBK" />

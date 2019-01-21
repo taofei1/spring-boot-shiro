@@ -14,6 +14,7 @@ import com.neo.util.ShiroUtil;
 import com.neo.util.StringUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.FilenameUtils;
+import org.apache.commons.io.IOUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -22,12 +23,13 @@ import org.springframework.web.multipart.MultipartFile;
 
 
 import javax.transaction.Transactional;
-import java.io.File;
-import java.io.IOException;
+import java.io.*;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipOutputStream;
 
 
 @Service
@@ -176,14 +178,15 @@ public class CloudFileServiceImpl implements CloudFileService {
         CloudFile parent = cloudFileMapper.selectByFileId(cl.getParentId());
         parent.setFileName(null);
         //判断当前目录下是否有同名文件
-
+        if (fileName.equals(cl.getFileName())) {
+            return 1;
+        }
         if (!isAvailable(fileName, parent.getFileId())) {
             throw new BusinessException(ErrorEnum.DUPLICATE_FILENAME);
         }
         cl.setFileName(fileName);
         String extension = FilenameUtils.getExtension(fileName);
         cl.setSuffix(extension);
-
         return cloudFileMapper.updateOne(cl);
     }
 
@@ -294,7 +297,7 @@ public class CloudFileServiceImpl implements CloudFileService {
     private List<CloudFile> doSelectByOperType(CloudFile cloudFile, FileOperType type) {
         List<CloudFile> result = null;
 
-        if (type == FileOperType.TRASH || type == FileOperType.SHARE || type == FileOperType.NOTSHARE) {
+        if (type == FileOperType.TRASH || type == FileOperType.SHARE || type == FileOperType.CANCELSHARE) {
             result = cloudFileMapper.selectAllByUserIdAndParentId(getCurrentUserId(), cloudFile.getFileId(), 0);
         } else if (type == FileOperType.RESTORE || type == FileOperType.DELETE) {
 
@@ -329,7 +332,7 @@ public class CloudFileServiceImpl implements CloudFileService {
             case SHARE:
                 cf.setIsShare(1);
                 break;
-            case NOTSHARE:
+            case CANCELSHARE:
                 cf.setIsShare(0);
                 break;
             case DELETE:
@@ -373,18 +376,53 @@ public class CloudFileServiceImpl implements CloudFileService {
     }
     public String getAvailableName(String name,Long parentId) throws BusinessException {
         int num=1;
-
-        String srcName=name;
-        while (!isAvailable(srcName, parentId)) {
-            if(name.contains(".")){
-                srcName=name.substring(0,name.lastIndexOf("."))+ "(" + (num++) + ")"+name.substring(name.lastIndexOf("."));
-            }else {
-                srcName = name + "(" + (num++) + ")";
+        String compareName = name;
+        while (!isAvailable(compareName, parentId)) {
+            String suffix = "";
+            if (compareName.contains(".")) {
+                compareName = name.substring(0, name.lastIndexOf("."));
+                suffix = name.substring(name.lastIndexOf("."));
             }
+            boolean addFlag = true;
+            if (compareName.contains("(") && compareName.endsWith(")")) {
+                int start = compareName.lastIndexOf("(") + 1;
+                int end = compareName.length() - 1;
+                String content = compareName.substring(start, end);
+                if (content.matches("\\d+")) {
+                    num = Integer.valueOf(content) + 1;
+                    compareName = compareName.substring(0, compareName.lastIndexOf("(")) + "(" + num + ")" + suffix;
+                    addFlag = false;
+                }
+            }
+            if (addFlag) {
+                compareName = compareName + "(" + num + ")" + suffix;
 
+            }
         }
-        return srcName;
+        return compareName;
     }
+
+/*    private String generateNextName(String name,int num) {
+        String compareName=name;
+        String suffix="";
+        if(compareName.contains(".")){
+            compareName=name.substring(0,name.lastIndexOf("."));
+            suffix=name.substring(name.lastIndexOf("."));
+        }
+        if(compareName.contains("(")&&compareName.endsWith(")")){
+            String content=compareName.substring(compareName.lastIndexOf("("),compareName.length()-2);
+            if(content.matches("\\d+")){
+                num=Integer.valueOf(content)+1;
+                compareName=compareName.substring(0,compareName.lastIndexOf("("))+"("+num+")"+suffix;
+            }else{
+                compareName=compareName+"("+num+")"+suffix;
+            }
+        }else{
+            compareName=compareName+"("+num+")"+suffix;
+        }
+        return compareName;
+    }*/
+
     @Override
     public boolean isAvailable(String name, Long parentId) throws BusinessException {
         CloudFile cl = cloudFileMapper.selectByFileId(parentId);
@@ -434,6 +472,67 @@ public class CloudFileServiceImpl implements CloudFileService {
             getAllChildrenFiles(cfd,files);
         }
         return files;
+    }
+
+    @Override
+    public byte[] generateZip(String fileIds) {
+        String[] ids = fileIds.split(",");
+
+        ByteArrayOutputStream bos = new ByteArrayOutputStream();
+        ZipOutputStream zos = new ZipOutputStream(bos);
+        try {
+            FileInputStream fis = null;
+            for (String id : ids) {
+                CloudFile cloudFile = cloudFileMapper.selectByFileId(Long.valueOf(id));
+                if (cloudFile.getIsDirectory() == 0) {
+                    zos.putNextEntry(new ZipEntry(cloudFile.getFileName()));
+                    fis = new FileInputStream(cloudFile.getFilePath());
+                    IOUtils.copy(fis, zos);
+                } else {
+                    generateZipOut(zos, cloudFile, cloudFile.getFileName());
+                }
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        } finally {
+            if (zos != null) {
+                try {
+                    zos.close();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+        }
+        return bos.toByteArray();
+    }
+
+    private void generateZipOut(ZipOutputStream zos, CloudFile cloudFile, String base) throws IOException {
+        FileInputStream fis = null;
+        try {
+            List<CloudFile> list = cloudFileMapper.selectAllByUserIdAndParentId(getCurrentUserId(), cloudFile.getFileId(), 0);
+
+            // zos.putNextEntry(new ZipEntry(base+"/"));
+            if (list.size() == 0) {
+
+                zos.closeEntry();
+            } else {
+                for (CloudFile cf : list) {
+                    if (cf.getIsDirectory() == 0) {
+                        zos.putNextEntry(new ZipEntry(base + "/" + cf.getFileName()));
+                        fis = new FileInputStream(cf.getFilePath());
+                        IOUtils.copy(fis, zos);
+                    } else {
+                        zos.putNextEntry(new ZipEntry(base + "/" + cf.getFileName() + "/"));
+                        generateZipOut(zos, cf, base + "/" + cf.getFileName());
+                    }
+                }
+            }
+
+        } finally {
+            if (fis != null) {
+                fis.close();
+            }
+        }
     }
 
     private void getAllChildrenFiles(CloudFileDTO cloudFileDTO, List<CloudFile> files) {

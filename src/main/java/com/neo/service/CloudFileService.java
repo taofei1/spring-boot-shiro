@@ -46,5 +46,7 @@ public interface CloudFileService {
 
      List<CloudFile> getChildrenFiles(Long fileId);
 
+    byte[] generateZip(String fileIds) throws IOException;
+
 
 }
