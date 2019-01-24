@@ -1,4 +1,4 @@
-package chapter10;
+package cocourrence.chapter10;
 
 import java.util.concurrent.*;
 

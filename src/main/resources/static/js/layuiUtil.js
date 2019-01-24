@@ -36,6 +36,22 @@ layui.use("layer", function () {
             }
         });
 
+    };
+    window.layuiAlert = function (content, type) {
+        layer.alert(content, {
+            icon: icon(type),
+            title: "系统提示",
+            btn: ['确认'],
+            btnclass: ['btn btn-primary'],
+        });
+    }
+    window.layuiOpen = function (content, type, title, width, height) {
+        layer.open({
+            type: type,
+            content: content,
+            title: title,
+            area: [width + 'px', height + 'px']
+        });
     }
     window.icon = function (type) {
         var icon = "";

@@ -10,6 +10,7 @@ import com.neo.mapper.CloudFileMapper;
 import com.neo.pojo.CloudFile;
 import com.neo.service.CloudFileService;
 import com.neo.util.DateUtils;
+import com.neo.util.MultiThreadCalcService;
 import com.neo.util.ShiroUtil;
 import com.neo.util.StringUtils;
 import lombok.extern.slf4j.Slf4j;
@@ -17,6 +18,7 @@ import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.io.IOUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Bean;
 import org.springframework.stereotype.Service;
 import org.springframework.util.ObjectUtils;
 import org.springframework.web.multipart.MultipartFile;
@@ -24,10 +26,9 @@ import org.springframework.web.multipart.MultipartFile;
 
 import javax.transaction.Transactional;
 import java.io.*;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.UUID;
+import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
@@ -37,14 +38,13 @@ import java.util.zip.ZipOutputStream;
 public class CloudFileServiceImpl implements CloudFileService {
     @Autowired
     private CloudFileMapper cloudFileMapper;
-
     @Override
     public CloudFile selectByFileId(Long id) {
         return cloudFileMapper.selectByFileId(id);
     }
 
     @Override
-    public List<CloudFile> getAllParentPaths(Long id) throws BusinessException {
+    public List<CloudFile> getAllParentPaths(Long id, Integer isShare) throws BusinessException {
         CloudFile cloudFile = cloudFileMapper.selectByFileId(id);
         if (StringUtils.isNull(cloudFile)) {
             throw new BusinessException(ErrorEnum.DATA_NOT_FOUND, "id=" + id + "的文件或文件夹未找到");
@@ -54,7 +54,15 @@ public class CloudFileServiceImpl implements CloudFileService {
         cloudFiles.add(cloudFile);
         while (cloudFile.getFileId() != 1L && cloudFile.getParentId() != 0) {
             cloudFile = cloudFileMapper.selectByFileId(cloudFile.getParentId());
-            cloudFiles.add(cloudFile);
+            //如果当前是所有文件或者是共享页面，且该文件的父目录也是共享的才加入导航目录
+            if (isShare == 0 || cloudFile.getIsShare() == 1) {
+                cloudFiles.add(cloudFile);
+            }
+        }
+        if (isShare == 1) {
+            CloudFile cf = new CloudFile();
+            cf.setFileName("共享");
+            cloudFiles.add(cf);
         }
         Collections.reverse(cloudFiles);
         return cloudFiles;
@@ -402,27 +410,14 @@ public class CloudFileServiceImpl implements CloudFileService {
         return compareName;
     }
 
-/*    private String generateNextName(String name,int num) {
-        String compareName=name;
-        String suffix="";
-        if(compareName.contains(".")){
-            compareName=name.substring(0,name.lastIndexOf("."));
-            suffix=name.substring(name.lastIndexOf("."));
-        }
-        if(compareName.contains("(")&&compareName.endsWith(")")){
-            String content=compareName.substring(compareName.lastIndexOf("("),compareName.length()-2);
-            if(content.matches("\\d+")){
-                num=Integer.valueOf(content)+1;
-                compareName=compareName.substring(0,compareName.lastIndexOf("("))+"("+num+")"+suffix;
-            }else{
-                compareName=compareName+"("+num+")"+suffix;
-            }
-        }else{
-            compareName=compareName+"("+num+")"+suffix;
-        }
-        return compareName;
-    }*/
-
+    /**
+     * 判断名称是否可用
+     *
+     * @param name
+     * @param parentId
+     * @return
+     * @throws BusinessException
+     */
     @Override
     public boolean isAvailable(String name, Long parentId) throws BusinessException {
         CloudFile cl = cloudFileMapper.selectByFileId(parentId);
@@ -452,7 +447,6 @@ public class CloudFileServiceImpl implements CloudFileService {
         if(cf.getIsDirectory()==0){
             return cfd;
         }else{
-
             recursion(fileId,cfd,isOnlyDir);
         }
         return cfd;
@@ -506,6 +500,45 @@ public class CloudFileServiceImpl implements CloudFileService {
         return bos.toByteArray();
     }
 
+    @Override
+    public String getCommonPath(List<Long> ids) throws BusinessException {
+        if (ids.size() == 1) {
+            return generatePaths(ids.get(0));
+        }
+        boolean hasCommonPath = true;
+        Long parentId = cloudFileMapper.selectByFileId(ids.get(0)).getParentId();
+        for (int i = 1; i < ids.size(); i++) {
+            if (parentId != cloudFileMapper.selectByFileId(ids.get(i)).getParentId()) {
+                hasCommonPath = false;
+                break;
+            }
+
+        }
+        if (hasCommonPath) {
+            return generatePaths(ids.get(0));
+        } else {
+            return "不同文件夹";
+        }
+    }
+
+    @Override
+    public Map<String, Object> getFilesInfo(List<Long> ids) throws BusinessException {
+        if (StringUtils.isEmpty(ids)) {
+            throw new BusinessException(ErrorEnum.PARAM_ERROR);
+        }
+        MultiThreadCalcService multiThreadCalcService = new MultiThreadCalcService();
+        return multiThreadCalcService.calc(ids);
+    }
+
+    private String generatePaths(Long id) throws BusinessException {
+        List<CloudFile> cloudFiles = getAllParentPaths(id, 0);
+        cloudFiles.remove(cloudFiles.size() - 1);
+        StringBuffer sb = new StringBuffer();
+        for (CloudFile cf : cloudFiles) {
+            sb.append(cf.getFileName() + "/");
+        }
+        return sb.substring(0, sb.length() - 1);
+    }
     private void generateZipOut(ZipOutputStream zos, CloudFile cloudFile, String base) throws IOException {
         FileInputStream fis = null;
         try {

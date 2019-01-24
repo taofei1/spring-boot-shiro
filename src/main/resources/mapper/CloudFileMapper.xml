@@ -32,7 +32,7 @@
         <if test="fileId!=null">
             AND parent_id=#{fileId}
         </if>
-        <if test="isShare!= '0'">
+        <if test="isShare!= 0">
             AND is_share='1'
         </if>
         <if test="userId!=null">

@@ -185,6 +185,7 @@ function rename(a) {
 function remove() {
     var names = [];
     var checkedFilesId = getCheckedFilesId(names);
+    console.log(checkedFilesId);
     if (checkedFilesId.length == 0) {
         msgError("请选择文件或文件夹！");
     } else {
@@ -220,9 +221,80 @@ function createDir() {
     $(".loadfiletype").load(prefix + '/createDir', {fileId: parentId, dirName: name});
 }
 
-/**
- * 重命名load js
- */
+function fileInfo() {
+    var text = "";
+    var names = [];
+    var checkeIds = getCheckedFilesId(names);
+    if (checkeIds.length == 1) {
+        text += names[0] + "<br>";
+    }
+    console.log(text);
+    var dir = 0;
+    var file = 0;
+    var updateTime = "";
+    $.each(clouFiles, function (n, value) {
+
+        for (var i in checkeIds) {
+            if (value.fileId == checkeIds[i]) {
+                if (checkeIds.length == 1) {
+                    updateTime = value.updateTime;
+                }
+                if (value.isDirectory == 1) {
+                    dir++
+                } else {
+                    file++;
+                }
+            }
+        }
+
+    });
+    if (dir == 0 && file > 0) {
+        if (file > 1) {
+            text += file + "个文件<br>";
+        }
+        text += "文件类型：文件<br>";
+    } else if (dir > 0 && file == 0) {
+        text += "包含：<span class='fileContent'>正在计算</span><br>";
+        text += "文件类型：文件夹<br>";
+    } else if (dir > 0 && file > 0) {
+        text += "包含：<span class='fileContent'>正在计算</span><br>";
+        text += "文件类型：文件&文件夹<br>";
+    } else {
+        return;
+    }
+    text += "文件大小：<span class='size'>正在计算。</span><br>"
+    text += "位置：";
+    var lay;
+    $.getJSON("/file/commonPath?ids[]=" + checkeIds, function (res) {
+        console.log(res);
+        if (res.code == '00') {
+            var result = res.data;
+            if (checkeIds.length > 1) {
+                text += "全部位于&nbsp;";
+            }
+            text += result + "<br>";
+            if (checkeIds.length == 1) {
+                text += "修改时间：" + updateTime;
+            }
+            $('#layerContent').html(text);
+            lay = layuiOpen($('#layerContent'), 1, "文件信息", 400, 250);
+        } else {
+            msgError(res.data);
+        }
+    });
+
+    $.getJSON('/file/filesInfo?ids[]=' + checkeIds, function (res) {
+        if (res.code != '00') {
+            msgError(res.data);
+        } else {
+            var result = res.data;
+            if ($('#layerContent').find('.fileContent').length > 0) {
+                $('#layerContent').find('.fileContent').html(result.filesNum + "个文件" + "&nbsp" + result.dirsNum + "个文件夹");
+            }
+            $('#layerContent').find('.size').html(result.size);
+        }
+    })
+}
 
 /**
  *
@@ -247,6 +319,7 @@ $("#upload").click(function () {
         success: function (data) {
             if (data.code=='00') {
                 msgSuccess("上传成功");
+                $("#files").val("");
                 refresh($('#currentPathId').val());
             }else{
                 msgError(data.data);

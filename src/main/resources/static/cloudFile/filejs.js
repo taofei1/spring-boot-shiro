@@ -29,15 +29,16 @@ $(".loadfiletype").on("click", ".file-check", function () {
  * 全选文件JS
  */
 $(".loadfiletype").on("click", ".allcheck", function () {
-    var fileone = $(".file-one");
     if ($(this).hasClass("allchecked")) {
-        $(".file-one").each(function () {
-            $(".file-one").removeClass("file-one-check");
-        });
+
+        $(".file-one").removeClass("file-one-check");
         $(this).removeClass("allchecked");
     } else {
+
         $(".file-one").each(function () {
-            $(".file-one").addClass("file-one-check");
+            if (!$(this).hasClass("diplaynone")) {
+                $(this).addClass("file-one-check");
+            }
         });
         $(this).addClass("allchecked");
     }
@@ -184,6 +185,7 @@ $("#thismodal .box-footer").on("click", ".mcmodalcancle", function () {
 function getCheckedFilesId(fileNames) {
     var checkedpaths = $(".file-one.file-one-check");
     var checkedFilesId = [];
+    console.log(checkedpaths);
     checkedpaths.each(function () {
         checkedFilesId.push($(this).attr("id"));
         if (fileNames) {

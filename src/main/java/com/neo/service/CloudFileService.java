@@ -6,14 +6,14 @@ import com.neo.exception.BusinessException;
 import com.neo.pojo.CloudFile;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.io.File;
 import java.io.IOException;
 import java.util.List;
+import java.util.Map;
 
 public interface CloudFileService {
     CloudFile selectByFileId(Long id);
 
-    List<CloudFile> getAllParentPaths(Long id) throws BusinessException;
+    List<CloudFile> getAllParentPaths(Long id, Integer isShare) throws BusinessException;
     List<CloudFile> selectPersonalOrShareAndNameLike(CloudFile cloudFile) throws BusinessException;
 
     List<CloudFile> getCateGoryFileAndNameLike(String cateGory, String fileName) throws BusinessException;
@@ -49,4 +49,7 @@ public interface CloudFileService {
     byte[] generateZip(String fileIds) throws IOException;
 
 
+    String getCommonPath(List<Long> ids) throws BusinessException;
+
+    Map<String, Object> getFilesInfo(List<Long> ids) throws BusinessException;
 }

@@ -41,7 +41,7 @@ public class CloudFileController {
         List<CloudFile> cloudFiles = cloudFileService.selectPersonalOrShareAndNameLike(cloudFile);
         map.put("parentId", cloudFile.getFileId());
         map.put("cloudFiles", cloudFiles);
-        map.put("parentPaths", cloudFileService.getAllParentPaths(1L));
+        map.put("parentPaths", cloudFileService.getAllParentPaths(1L, 0));
         map.put("loadType", "all");
         return prefix + "/cloudFile";
     }
@@ -76,7 +76,7 @@ public class CloudFileController {
             map.put("searchValue", cloudFile.getFileName());
             cloudFileList = nav(cloudFile.getFileName(), cloudFileList);
         } else {
-            cloudFileList = cloudFileService.getAllParentPaths(cloudFile.getFileId());
+            cloudFileList = cloudFileService.getAllParentPaths(cloudFile.getFileId(), cloudFile.getIsShare());
         }
         if (cloudFile.getIsShare() == 1) {
             map.put("loadType", "share");
@@ -304,6 +304,24 @@ public class CloudFileController {
                 fis.close();
             }
         }
+    }
+
+    @GetMapping("/commonPath")
+    @ResponseBody
+    public Response getCommonPath(@RequestParam("ids[]") List<Long> ids) throws BusinessException {
+        return Response.success(cloudFileService.getCommonPath(ids));
+    }
+
+    /**
+     * 获取文件详细信息
+     *
+     * @param ids
+     * @return
+     */
+    @GetMapping("/filesInfo")
+    @ResponseBody
+    public Response getFilesInfo(@RequestParam("ids[]") List<Long> ids) throws BusinessException {
+        return Response.success(cloudFileService.getFilesInfo(ids));
     }
 
 

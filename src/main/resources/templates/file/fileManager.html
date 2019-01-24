@@ -31,14 +31,17 @@
         <li><a class="menurename">重命名</a></li>
         <li><a class="movefile">移动到</a></li>
         <li><a class="copyfile">复制到</a></li>
+        <li><a class="fileInfo" onclick="fileInfo()">属性</a></li>
         <li><a onclick="remove()" class="loadtrash">删除</a></li>
     </ul>
-    <ul th:if="${loadType=='share'}">
+    <ul th:if="${loadType=='share'}" class="nav nav-pills nav-stacked" style="padding:5px 0 5px 0;">
         <li><a onclick="{ var ids=getCheckedFilesId();
         window.location='/file/download/'+ids.join(',');}">下载</a></li>
+        <li><a class="fileInfo" onclick="fileInfo()">属性</a></li>
     </ul>
     <ul th:if="${loadType=='trash'}" class="nav nav-pills nav-stacked" style="padding:5px 0 5px 0;">
         <li><a class="restore" onclick="restore()">还原</a></li>
+        <li><a class="fileInfo" onclick="fileInfo()">属性</a></li>
         <li><a class="remove" onclick="remove()">彻底删除</a></li>
     </ul>
 
@@ -107,7 +110,7 @@
                 <!--新建文件夹操作显示部分  -->
                 <div class="file-one creatpath pathtextarea diplaynone" style="width: 144px;">
                     <div class="file-img">
-                        <img src="/fileimg/Folder.png"/>
+                        <img src="/fileimg/Folder.png" style="height: auto;width: auto"/>
                     </div>
                     <div class="file-name" style="text-align: left;">
                         <!--<form action="createpath">-->
@@ -134,11 +137,11 @@
                         <div class="file-img path">
 
                             <a class="folder" style="cursor:pointer;" th:onclick="'refresh('+${cloudFile.fileId}+')'">
-                                <img src="/fileimg/Folder.png"/>
+                                <img src="/fileimg/Folder.png" style="height: auto;width:auto;"/>
                             </a>
 
                             <a class="folder" style="cursor:pointer;" th:onclick="'refresh('+${cloudFile.fileId}+')'">
-                                <img src="/fileimg/Folder.png"/>
+                                <img src="/fileimg/Folder.png" style="height: auto;width:auto;"/>
                             </a>
                         </div>
                         <div class="file-name path">
@@ -173,13 +176,14 @@
                                  src="/fileimg/Video.png"/>
                             <img th:if="${#strings.contains(cloudFile.contentType,'audio')}" src="/fileimg/Music.png"/>
                             <img th:if="${cloudFile.suffix=='pdf'}" src="/fileimg/PDF.png"/>
+                            <img th:if="${cloudFile.suffix=='html'}" src="/fileimg/html.png"/>
                             <img th:if="${cloudFile.suffix=='exe'}" src="/fileimg/exe.png"/>
                             <img th:if="${cloudFile.suffix=='js'}" src="/fileimg/js.png"/>
                             <img th:if="${cloudFile.suffix=='java'}" src="/fileimg/java.png"/>
                             <img th:if="${cloudFile.suffix=='doc'||cloudFile.suffix=='docx'}" src="/fileimg/word.png"/>
                             <img th:if="${cloudFile.suffix=='xlxs'||cloudFile.suffix=='xls'}" src="/fileimg/excel.png"/>
                             <img th:if="${cloudFile.suffix=='zip'||cloudFile.suffix=='rar'||cloudFile.suffix=='7z'||cloudFile.suffix=='tar'||cloudFile.suffix=='taz'}"
-                                 src="/fileimg/ZIP.png"/>
+                                 src="/fileimg/ZIP.png" style="width: auto;height: auto"/>
                             <img th:if="${cloudFile.suffix=='txt'}" src="/fileimg/Text.png"/>
                             <img th:if="${cloudFile.suffix=='jpg'}" th:src="'/file/download/'+${cloudFile.fileId}"
                                  style="width: 100%;height: auto"/>
@@ -212,12 +216,14 @@
 
     </div>
 </div>
-<script>
+<div id="layerContent">
+</div>
+<script th:inline="javascript">
     if ($("#loadType").val() == 'trash') {
 
         $('.folder').css({'pointer-events': ' none', 'cursor': 'default'});
         $(' .topcreatepath').hide();
     }
-
+    var clouFiles = [[${cloudFiles}]];
 </script>
 </html>
