@@ -118,6 +118,9 @@ pagehelper:
 feifei:
   profile: D:/profile
   maxSize: 10M
+management:
+  security:
+    enabled: false
 
 
 

@@ -18,7 +18,10 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.cache.CacheManager;
 import org.springframework.cache.annotation.EnableCaching;
 import org.springframework.test.context.junit4.SpringRunner;
+import org.springframework.test.context.web.WebAppConfiguration;
+import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.web.client.RestTemplate;
+import org.springframework.web.context.WebApplicationContext;
 
 
 import javax.annotation.Resource;
@@ -28,9 +31,14 @@ import java.util.List;
 @SpringBootTest
 @EnableCaching
 @Slf4j
+@WebAppConfiguration
 public class SpringBootShiroApplicationTests {
 	@Autowired
 	private GenMapper genMapper;
+
+	@Autowired
+	private WebApplicationContext applicationContext;
+	private MockMvc mockMvc;
 
 	@Autowired
 	private FileInfoService fileInfoService;
