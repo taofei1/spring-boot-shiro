@@ -303,6 +303,9 @@ $("#upload").click(function () {
     var formData = new FormData();
     formData.append("multipartFile", document.getElementById("files").files[0]);
     formData.append("parentId",$("#currentPathId").val());
+    /*    window.setInterval(function(){$.getJSON("/file/uploadProgress",function (res) {
+            console.log(res);
+        })},100);*/
     $.ajax({
         url: prefix+"/upload",
         type: "POST",
@@ -324,9 +327,73 @@ $("#upload").click(function () {
             }else{
                 msgError(data.data);
             }
+        },
+        xhr: function () {
+            var xhr = $.ajaxSettings.xhr();
+            if (xhr.upload) {
+                //处理进度条的事件
+                xhr.upload.addEventListener("progress", progressHandle, false);
+                //加载完成的事件
+                xhr.addEventListener("load", completeHandle, false);
+                //加载出错的事件
+                xhr.addEventListener("error", failedHandle, false);
+                //加载取消的事件
+                xhr.addEventListener("abort", canceledHandle, false);
+                //开始显示进度条
+                showProgress();
+                return xhr;
+            }
         }
     });
 });
+var start = 0;
+
+//显示进度条的函数
+function showProgress() {
+    start = new Date().getTime();
+    $(".progress-body").css("display", "block");
+}
+
+//隐藏进度条的函数
+function hideProgress() {
+    $("#uploadFile").val('');
+    $('.progress-body .progress-speed').html("0 M/S, 0/0M");
+    $('.progress-body percentage').html("0%");
+    $(".progress-body").css("display", "none");
+}
+
+//进度条更新
+function progressHandle(e) {
+    $('.progress-body progress').attr({value: e.loaded, max: e.total});
+    var percent = e.loaded / e.total * 100;
+    var time = ((new Date().getTime() - start) / 1000).toFixed(3);
+    if (time == 0) {
+        time = 1;
+    }
+    $('.progress-body .progress-speed').html(((e.loaded / 1024) / 1024 / time).toFixed(2) + "M/S, " + ((e.loaded / 1024) / 1024).toFixed(2) + "/" + ((e.total / 1024) / 1024).toFixed(2) + " MB. ");
+    $('.progress-body percentage').html(percent.toFixed(2) + "%");
+    if (percent == 100) {
+        $('.progress-body .progress-info').html("上传完成,后台正在处理...");
+    } else {
+        $('.progress-body .progress-info').html("文件上传中...");
+    }
+};
+
+//上传完成处理函数
+function completeHandle(e) {
+    $('.progress-body .progress-info').html("上传文件完成。");
+    setTimeout(hideProgress, 3000);
+};
+
+//上传出错处理函数
+function failedHandle(e) {
+    $('.progress-body .progress-info').html("上传文件出错, 服务不可用或文件过大。");
+};
+
+//上传取消处理函数
+function canceledHandle(e) {
+    $('.progress-body .progress-info').html("上传文件取消。");
+};
 
 
 

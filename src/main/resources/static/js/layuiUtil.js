@@ -17,10 +17,10 @@ layui.use("layer", function () {
         msg(content,modal_status.WARNING);
     }
     window.msg = function (content, type) {
-        if (type != undefined) {
+        if (type = "success") {
             layer.msg(content, {icon: icon(type), time: 1000, shift: 5});
         } else {
-            layer.msg(content);
+            layer.msg(content, {icon: icon(type)});
         }
     };
     window.layConfirm = function (content, callBack) {

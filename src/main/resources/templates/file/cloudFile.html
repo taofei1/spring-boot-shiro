@@ -99,6 +99,24 @@
 		.pathtextarea .btn-default:hover {
 			background-color: #fff !important;
 		}
+
+        progress {
+            background-color: #56BE64;
+        }
+
+        progress::-webkit-progress-bar {
+            background: #ccc;
+        }
+
+        progress::-webkit-progress-value {
+            background: #56BE64;
+        }
+
+        percentage {
+            position: fixed;
+            left: 160px;
+        }
+
 	</style>
 
 </head>
@@ -120,6 +138,21 @@
 				<input type="button" name="file" id="upload"
 					   style="opacity: 0; position: absolute; top: 0; right: 0; min-width: 100%; min-height: 100%;"/>
 			</div>
+        <div style="display: none;" class="progress-body">
+            <div>
+                <span style="width: 100px; display: inline-block; text-align: right">上传进度：</span>
+                <progress></progress>
+                <percentage>0%</percentage>
+            </div>
+            <div>
+                <span style="width: 100px; display: inline-block; text-align: right">上传速度：</span>
+                <span style="margin-bottom: 10px; margin-left: 30px; width: 300px;"
+                      class="progress-speed">0 M/S, 0/0M</span>
+            </div>
+            <div>
+                <span style="width: 100px; display: inline-block; text-align: right">上传状态：</span>
+            </div>
+        </div>
 		<div class="bgc-w box box-solid">
 			<div class="box-header">
 				<h3 class="box-title">云盘</h3>
@@ -176,48 +209,6 @@
 	</div>
 </div>
 
-<!-- 移动复制模态框 -->
-<div class="modal fade in" id="thismodal" data-backdrop="static">
-	<div class="modal-dialog">
-		<div class="modal-content">
-			<div class="modal-body box no-padding" style="display: none;">
-				<div class="box-header">
-					<h3 class="box-title mc-title" style="font-size:15px;"></h3>
-				</div>
-				<div class="box-body no-padding">
-					<div class="box-header" style="padding:3px 0 3px 0;">
-							<span class="btn btn-default btn-xs des mm">
-								<i class="glyphicon-minus"></i>
-							</span>
-						<!-- <img class="mcfloorimg" src="images/fileimg/Folder.png" /> -->
-						<div class="mcflooropen"></div>
-						<h3 class="box-title" style="font-size:12px;">${userrootpath.pathName}</h3>
-						<input class="mctopathid" type="hidden" value="${userrootpath.id}"/>
-					</div>
-					<ul class="nav nav-pills nav-stacked mm" style="padding-left:15px;">
-						<div class="pathidcompare" pathId="${path.id}">
-							<div class="box-header no-padding">
-										<span class="btn btn-default btn-xs des mm">
-											<i class="jiajian glyphicon-plus"></i>
-										</span>
-								<span class="openpath modalajax">
-											<div class="mcflooropen"></div>
-											<h3 class="box-title" style="font-size:12px;">${path.pathName}</h3>
-											<input class="mctopathid" type="hidden" value="${path.id}"/>
-										</span>
-							</div>
-							<ul class="nav nav-pills nav-stacked mm modalajaxdata"
-								style="padding-left:15px;display:none;">
-
-							</ul>
-						</div>
-
-					</ul>
-				</div>
-			</div>
-		</div>
-	</div>
-</div>
 </body>
 
 <script th:src="@{/cloudFile/iconfont.js}"></script>

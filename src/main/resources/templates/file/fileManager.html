@@ -12,10 +12,6 @@
     }
 </style>
 <script>
-    function download() {
-        console.log(11);
-
-    }
 </script>
 <input type="hidden" id="loadType" th:value="${loadType}"/>
 <input type="hidden" id="searchValue" th:value="${searchValue}"/>
@@ -30,7 +26,8 @@
         <li><a class="cancelShare" onclick="cancelShare()">取消共享</a></li>
         <li><a class="menurename">重命名</a></li>
         <li><a class="movefile">移动到</a></li>
-        <li><a class="copyfile">复制到</a></li>
+        <li><a class="copyfile">复制</a></li>
+        <li><a class="paste" style="display: none">粘贴</a></li>
         <li><a class="fileInfo" onclick="fileInfo()">属性</a></li>
         <li><a onclick="remove()" class="loadtrash">删除</a></li>
     </ul>

@@ -1,16 +1,11 @@
 package com.neo;
 
-
-import com.neo.DTO.CloudFileDTO;
 import com.neo.entity.SyncFilePlan;
 import com.neo.mapper.GenMapper;
-import com.neo.model.Car;
-import com.neo.pojo.Directory;
 import com.neo.service.CloudFileService;
 import com.neo.service.FileInfoService;
 import com.neo.service.SyncFilePlanService;
 import lombok.extern.slf4j.Slf4j;
-import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -20,7 +15,6 @@ import org.springframework.cache.annotation.EnableCaching;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.context.web.WebAppConfiguration;
 import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.web.client.RestTemplate;
 import org.springframework.web.context.WebApplicationContext;
 
 
