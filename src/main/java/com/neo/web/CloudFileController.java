@@ -4,6 +4,7 @@ import com.neo.enums.FileOperType;
 import com.neo.enums.FileType;
 import com.neo.exception.BusinessException;
 import com.neo.exception.ErrorEnum;
+import com.neo.model.Progress;
 import com.neo.pojo.CloudFile;
 import com.neo.service.CloudFileService;
 import com.neo.util.Response;
@@ -16,7 +17,9 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
+import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.HttpSession;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -269,16 +272,32 @@ public class CloudFileController {
         }
     }
 
-    @PostMapping("/move/{src}")
-    public String move(@PathVariable Long src, Long srcParentId, Long parentId, Map map) throws BusinessException {
+    @PostMapping("/move/{src}/to/{parentId}")
+    @ResponseBody
+    public Response move(@PathVariable("src") Long src, @PathVariable("parentId") Long parentId) throws BusinessException {
         cloudFileService.moveFile(src, parentId);
-        CloudFile cloudFile = new CloudFile();
-        cloudFile.setFileId(parentId);
-        cloudFile.setUserId(ShiroUtil.getSysUser().getUid().longValue());
-        map.put("cloudFile", cloudFile);
-        return "forward:/" +prefix+"/all";
+
+        return Response.success();
     }
 
+    @PostMapping("/copy/{src}/to/{parentId}")
+    @ResponseBody
+    public Response copy(@PathVariable("src") Long src, @PathVariable("parentId") Long parentId) throws BusinessException {
+        cloudFileService.copyFile(src, parentId);
+
+        return Response.success();
+    }
+
+    @GetMapping(value = "/uploadProgress")
+    @ResponseBody
+    public Response getProgress(HttpServletRequest request) {
+        HttpSession session = request.getSession();
+        Progress progress = (Progress) session.getAttribute("status");
+        System.out.println(progress + "controller");
+        return Response.success(progress);
+    }
+
+    @PostMapping()
     @RequestMapping("/download/{id}")
     public void download(@PathVariable("id") String fileId, HttpServletResponse response) throws IOException {
         String[] ids = fileId.split(",");

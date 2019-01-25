@@ -1,13 +1,10 @@
 package com.neo.config;
-
 import com.neo.util.StringUtils;
 import com.neo.yml.YamlUtil;
 import lombok.extern.slf4j.Slf4j;
-
 import java.io.FileNotFoundException;
 import java.util.HashMap;
 import java.util.Map;
-
 @Slf4j
 public enum GlobalConfig {
     INSTANCE;
@@ -73,14 +70,14 @@ public enum GlobalConfig {
         String configSize = getConfig("feifei.maxSize").toUpperCase();
         Long size = StringUtils.getPrefixNum(configSize);
 
-        if (configSize.endsWith("K")) {
-            return size;
-        } else if (configSize.endsWith("KB")) {
+        if (configSize.endsWith("KB")) {
             return size * 1024;
         } else if (configSize.endsWith("M") || configSize.endsWith("MB")) {
             return size * (1024 * 1024);
         } else if (configSize.endsWith("G") || configSize.endsWith("GB")) {
             return size * (1024 * 1024 * 1024);
+        } else if (configSize.endsWith("B")) {
+            return size;
         } else {
             return 1024 * 1024L;
         }

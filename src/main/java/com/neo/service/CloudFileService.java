@@ -52,4 +52,6 @@ public interface CloudFileService {
     String getCommonPath(List<Long> ids) throws BusinessException;
 
     Map<String, Object> getFilesInfo(List<Long> ids) throws BusinessException;
+
+    int copyFile(Long src, Long parentId) throws BusinessException;
 }

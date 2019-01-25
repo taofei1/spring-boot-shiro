@@ -1,12 +1,14 @@
 package com.neo.listener;
 
 import com.neo.model.Progress;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.fileupload.ProgressListener;
 import org.springframework.stereotype.Component;
 
 import javax.servlet.http.HttpSession;
 
 @Component
+@Slf4j
 public class FileUploadProgressListener implements ProgressListener {
 
     private HttpSession session;

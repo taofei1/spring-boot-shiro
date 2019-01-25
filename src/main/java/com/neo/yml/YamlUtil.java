@@ -21,13 +21,6 @@ import org.yaml.snakeyaml.DumperOptions;
  */
 public class YamlUtil
 {
-    public static void main(String[]  args) throws FileNotFoundException {
-        Map map=loadYaml("application.yml");
-      //  List<String> s= Arrays.asList(new String[]{"1","2"});
-       // setProperty(map,"aa","1");
-        //System.out.println(getProperty(map,"entity.packages"));
-
-    }
     public static Map<?, ?> loadYaml(String fileName) throws FileNotFoundException
     {
         InputStream in = YamlUtil.class.getClassLoader().getResourceAsStream(fileName);

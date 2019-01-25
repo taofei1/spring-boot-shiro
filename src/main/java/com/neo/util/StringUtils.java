@@ -447,6 +447,7 @@ public class StringUtils extends org.apache.commons.lang3.StringUtils
         if (isEmpty(size)) {
             return null;
         }
+        size = size.trim();
         StringBuffer sb = new StringBuffer();
         char[] chars = size.toCharArray();
         for (int i = 0; i < chars.length; i++) {

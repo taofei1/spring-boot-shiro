@@ -18,17 +18,12 @@ import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.io.IOUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.Bean;
 import org.springframework.stereotype.Service;
 import org.springframework.util.ObjectUtils;
 import org.springframework.web.multipart.MultipartFile;
-
-
 import javax.transaction.Transactional;
 import java.io.*;
 import java.util.*;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.atomic.AtomicInteger;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
@@ -231,6 +226,12 @@ public class CloudFileServiceImpl implements CloudFileService {
      */
     @Override
     public int moveFile(Long fileId, Long newParentId) throws BusinessException {
+        CloudFile cl = moveOrCopy(fileId, newParentId);
+
+        return cloudFileMapper.updateOne(cl);
+    }
+
+    private CloudFile moveOrCopy(Long fileId, Long newParentId) throws BusinessException {
         CloudFile cl = cloudFileMapper.selectByFileId(fileId);
         checkAccess(cl, null);
         List<CloudFile> cloudFiles = cloudFileMapper.selectAllByUserIdAndParentId(getCurrentUserId(), newParentId, 0);
@@ -239,15 +240,21 @@ public class CloudFileServiceImpl implements CloudFileService {
                 throw new BusinessException(ErrorEnum.DUPLICATE_FILENAME);
             }
         }
-        CloudFile parent = cloudFileMapper.selectByFileId(fileId);
+        CloudFile parent = cloudFileMapper.selectByFileId(newParentId);
         if (parent.getIsShare() == 1) {
             traverse(cl, FileOperType.SHARE);
         }
         cl.setParentId(newParentId);
-
-        return cloudFileMapper.updateOne(cl);
+        return cl;
     }
 
+    @Override
+    public int copyFile(Long src, Long parentId) throws BusinessException {
+        CloudFile cl = moveOrCopy(src, parentId);
+
+        return cloudFileMapper.insertOne(cl);
+
+    }
     @Override
     public void deleteBatch(List<Long> ids) throws BusinessException {
         for (Long id : ids) {
@@ -529,6 +536,7 @@ public class CloudFileServiceImpl implements CloudFileService {
         MultiThreadCalcService multiThreadCalcService = new MultiThreadCalcService();
         return multiThreadCalcService.calc(ids);
     }
+
 
     private String generatePaths(Long id) throws BusinessException {
         List<CloudFile> cloudFiles = getAllParentPaths(id, 0);

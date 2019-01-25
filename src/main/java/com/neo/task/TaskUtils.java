@@ -11,8 +11,6 @@ import org.thymeleaf.util.StringUtils;
 public class TaskUtils {
     public final static Logger log = Logger.getLogger(TaskUtils.class);
 
-
-
     public static boolean invokMethod(SyncFilePlan syncFilePlan) throws ClassNotFoundException, IllegalAccessException, InstantiationException, NoSuchMethodException, InvocationTargetException {
         Object object = null;
         Class clazz;

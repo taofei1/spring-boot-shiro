@@ -62,7 +62,7 @@ spring:
 
   http:
     multipart:
-      max-file-size: 100mb
+      max-file-size: 1000mb
       max-request-size: 1000mb
 server:
   tomcat:
@@ -117,7 +117,7 @@ pagehelper:
 
 feifei:
   profile: D:/profile
-  maxSize: 10M
+  maxSize: 1GB
 management:
   security:
     enabled: false
