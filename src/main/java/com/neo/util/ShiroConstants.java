@@ -61,4 +61,8 @@ public interface ShiroConstants
      * 验证码错误
      */
     public static final String CAPTCHA_ERROR = "captchaError";
+    /**
+     * 所有当前会话的缓存名
+     */
+    String SESSIONS_CACHE = "allCurrentSessions";
 }

@@ -2,7 +2,7 @@ package com.neo.service.impl;
 
 import com.neo.constants.GenerateCodeSettings;
 import com.neo.exception.BusinessException;
-import com.neo.exception.ErrorEnum;
+import com.neo.enums.ErrorEnum;
 import com.neo.mapper.GenMapper;
 import com.neo.pojo.CreateTable;
 import com.neo.pojo.ColumnInfo;

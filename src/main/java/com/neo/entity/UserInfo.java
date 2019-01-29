@@ -213,6 +213,10 @@ public class UserInfo implements Serializable {
         this.avatar = avatar;
     }
 
+    public boolean isAdmin() {
+        return 1 == this.uid;
+    }
+
     /**
      * 密码盐.
      * @return
@@ -223,9 +227,4 @@ public class UserInfo implements Serializable {
     }
     //重新对盐重新进行了定义，用户名+salt，这样就更加不容易被破解
 
-
-    @Override
-    public String toString() {
-        return "UserInfo{" + "uid=" + uid + ", username='" + username + '\'' + ", email='" + email + '\'' + ", name='" + name + '\'' + ", birthday=" + birthday + ", mobile='" + mobile + '\'' + ", gender=" + gender + ", password='" + password + '\'' + ", salt='" + salt + '\'' + ", state=" + state + ", roleList=" + roleList + ", deptList=" + deptList + '}';
-    }
 }

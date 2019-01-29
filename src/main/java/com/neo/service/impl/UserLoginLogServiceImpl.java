@@ -1,12 +1,11 @@
 package com.neo.service.impl;
 
-import com.neo.DTO.LoginLogDTO;
+import com.neo.dto.LoginLogDTO;
 import com.neo.dao.UserLoginLogRepo;
 import com.neo.entity.LoginLog;
 import com.neo.exception.BusinessException;
-import com.neo.exception.ErrorEnum;
+import com.neo.enums.ErrorEnum;
 import com.neo.service.UserLoginLogService;
-import com.neo.util.Dto2Entity;
 import com.neo.util.PageableUtil;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -16,7 +15,6 @@ import org.springframework.util.ObjectUtils;
 
 import javax.transaction.Transactional;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -97,15 +95,6 @@ public class UserLoginLogServiceImpl implements UserLoginLogService {
         for(int id:ids){
             delete(id);
         }
-       /*     ids.forEach(id -> {
-                try {
-                    delete(id);
-                } catch (BusinessException e) {
-                    e.printStackTrace();
-
-                }
-
-            });*/
 
     }
 
@@ -131,7 +120,7 @@ public class UserLoginLogServiceImpl implements UserLoginLogService {
         }
         LoginLogDTO a=new LoginLogDTO();
         BeanUtils.copyProperties(login,a);
-        a.setUsername(login.getUser().getUsername());
+        a.setUsername(login.getUsername());
         return a;
     }
     public  List<LoginLogDTO> convertLoginLogListToDTOList(List<LoginLog> list){

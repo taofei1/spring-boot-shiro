@@ -2,7 +2,7 @@ package com.neo.service.impl;
 
 import com.github.pagehelper.PageHelper;
 import com.neo.exception.BusinessException;
-import com.neo.exception.ErrorEnum;
+import com.neo.enums.ErrorEnum;
 import com.neo.mapper.OperLogMapper;
 import com.neo.pojo.OperLog;
 import com.neo.service.OperLogService;

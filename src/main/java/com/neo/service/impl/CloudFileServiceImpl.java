@@ -1,11 +1,11 @@
 package com.neo.service.impl;
 
-import com.neo.DTO.CloudFileDTO;
+import com.neo.dto.CloudFileDTO;
 import com.neo.config.GlobalConfig;
 import com.neo.enums.FileOperType;
 import com.neo.enums.FileType;
 import com.neo.exception.BusinessException;
-import com.neo.exception.ErrorEnum;
+import com.neo.enums.ErrorEnum;
 import com.neo.mapper.CloudFileMapper;
 import com.neo.pojo.CloudFile;
 import com.neo.service.CloudFileService;

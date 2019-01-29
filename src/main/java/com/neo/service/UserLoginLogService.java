@@ -1,6 +1,6 @@
 package com.neo.service;
 
-import com.neo.DTO.LoginLogDTO;
+import com.neo.dto.LoginLogDTO;
 import com.neo.entity.LoginLog;
 import com.neo.exception.BusinessException;
 import org.springframework.data.domain.Page;

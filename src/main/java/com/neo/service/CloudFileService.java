@@ -1,6 +1,6 @@
 package com.neo.service;
 
-import com.neo.DTO.CloudFileDTO;
+import com.neo.dto.CloudFileDTO;
 import com.neo.enums.FileOperType;
 import com.neo.exception.BusinessException;
 import com.neo.pojo.CloudFile;

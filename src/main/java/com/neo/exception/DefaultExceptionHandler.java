@@ -1,5 +1,6 @@
 package com.neo.exception;
 
+import com.neo.enums.ErrorEnum;
 import com.neo.util.Response;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.ExceptionHandler;

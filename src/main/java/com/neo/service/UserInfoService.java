@@ -19,4 +19,6 @@ public interface UserInfoService {
    UserInfo findById(Integer id);
    UserInfo save(UserInfo userInfo);
 
+    UserInfo login(String username, String password);
+
 }

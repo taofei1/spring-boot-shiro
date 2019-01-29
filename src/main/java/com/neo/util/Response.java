@@ -1,6 +1,6 @@
 package com.neo.util;
 
-import com.neo.exception.ErrorEnum;
+import com.neo.enums.ErrorEnum;
 
 public class Response {
     private String code;

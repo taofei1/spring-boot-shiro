@@ -1,5 +1,7 @@
 package com.neo.exception;
 
+import com.neo.enums.ErrorEnum;
+
 public class BusinessException  extends  Exception{
     private String code;
     private String message;

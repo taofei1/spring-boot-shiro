@@ -10,10 +10,7 @@ import com.neo.model.MenuTree;
 import com.neo.service.UserInfoService;
 
 import com.neo.service.UserLoginLogService;
-import com.neo.util.MenuSort;
-import com.neo.util.Msg;
-import com.neo.util.RequestUtil;
-import com.neo.util.ShiroUtil;
+import com.neo.util.*;
 import org.apache.shiro.SecurityUtils;
 import org.apache.shiro.authc.IncorrectCredentialsException;
 import org.apache.shiro.authc.LockedAccountException;
@@ -44,17 +41,19 @@ public class HomeController {
     @RequestMapping({"/","/index"})
     public String index(HttpServletRequest request,Map<String,Object> map){
         //获取用户信息
-        UserInfo u = ShiroUtil.getSysUser();
-        UserInfo ui = userInfoService.findById(u.getUid());
+        UserInfo ui = ShiroUtil.getSysUser();
         map.put("userInfo",ui);
-        LoginLog loginLog=new LoginLog(RequestUtil.getOSInfo(request),RequestUtil.getBrowserInfo(request),RequestUtil.getIP(request),new Date(),RequestUtil.getSessionId(request),ui);
-        userLoginLogService.save(loginLog);
         if(ui.getIsFirst()==0) {
             map.put("isFirst", 0);
         }
         return "index";
     }
 
+    @RequestMapping("/isRem")
+    @ResponseBody
+    public Response get() {
+        return Response.success(SecurityUtils.getSubject().isRemembered());
+    }
     @RequestMapping("/vip")
     public String admin(){
         return "vip";
@@ -215,38 +214,6 @@ public class HomeController {
     @RequiresPermissions("system:loginLog")
     public String loginLogTable(){
         return "/monitor/loginLog";
-    }
-
-    @RequestMapping("/login")
-    public String login(HttpServletRequest request, Map<String, Object> map) {
-        System.out.println(request.getParameter("username"));
-        // 登录失败从request中获取shiro处理的异常信息。
-        // shiroLoginFailure:就是shiro异常类的全类名.
-        String exception = (String) request.getAttribute("shiroLoginFailure");
-        String msg = "";
-        if (exception != null) {
-            if (UnknownAccountException.class.getName().equals(exception)) {
-                System.out.println("UnknownAccountException -- > 账号不存在：");
-                msg = "Invalid username!";
-            } else if (IncorrectCredentialsException.class.getName().equals(exception)) {
-                System.out.println("IncorrectCredentialsException -- > 密码不正确：");
-                msg = "Incorrect password!";
-            } else if (CaptchaException.class.getName().equals(exception)) {
-                System.out.println("kaptchaValidateFailed -- > 验证码错误");
-                msg = "kaptchaValidateFailed!";
-            } else if (LockedAccountException.class.getName().equals(exception)) {
-                msg = "Locked Account！";
-            } else {
-                msg = "else >> " + exception;
-                System.out.println("else -- >" + exception);
-            }
-            map.put("username",request.getParameter("username"));
-            map.put("password",request.getParameter("password"));
-            map.put("msg", msg);
-        }
-
-        // 此方法不处理登录成功,由shiro进行处理
-        return "login";
     }
 
     @RequestMapping("/403")

@@ -3,7 +3,7 @@ package com.neo.service.impl;
 import com.neo.dao.DeptDao;
 import com.neo.entity.Dept;
 import com.neo.exception.BusinessException;
-import com.neo.exception.ErrorEnum;
+import com.neo.enums.ErrorEnum;
 import com.neo.service.DeptService;
 import com.neo.service.UserInfoService;
 import com.neo.util.PageableUtil;

@@ -1,6 +1,6 @@
 package com.neo.testSwagger;
 
-import com.neo.exception.ErrorEnum;
+import com.neo.enums.ErrorEnum;
 import com.neo.util.Response;
 import io.swagger.annotations.Api;
 

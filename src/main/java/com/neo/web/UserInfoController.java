@@ -1,12 +1,13 @@
 package com.neo.web;
-import com.neo.DTO.MailConfigDTO;
+
+import com.neo.dto.MailConfigDTO;
 import com.neo.annotation.Log;
 import com.neo.config.GlobalConfig;
 import com.neo.entity.Dept;
 import com.neo.entity.UserInfo;
 import com.neo.enums.OperateType;
 import com.neo.exception.BusinessException;
-import com.neo.exception.ErrorEnum;
+import com.neo.enums.ErrorEnum;
 import com.neo.service.DeptService;
 import com.neo.service.EmailService;
 import com.neo.service.RoleService;
@@ -16,8 +17,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.poi.ss.formula.functions.T;
 import org.apache.shiro.SecurityUtils;
 import org.apache.shiro.subject.Subject;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationEventPublisher;
@@ -32,8 +31,6 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 
-import javax.mail.Multipart;
-import javax.servlet.http.HttpServletRequest;
 import javax.validation.Valid;
 import java.io.File;
 import java.io.IOException;

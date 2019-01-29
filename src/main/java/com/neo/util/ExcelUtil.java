@@ -3,7 +3,7 @@ package com.neo.util;
 import com.neo.annotation.Excel;
 import com.neo.config.GlobalConfig;
 import com.neo.exception.BusinessException;
-import com.neo.exception.ErrorEnum;
+import com.neo.enums.ErrorEnum;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.poi.hssf.usermodel.*;
 import org.apache.poi.hssf.util.HSSFColor;

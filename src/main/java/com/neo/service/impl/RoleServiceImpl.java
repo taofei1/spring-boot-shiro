@@ -2,12 +2,10 @@ package com.neo.service.impl;
 
 import com.neo.dao.RoleDao;
 import com.neo.entity.Role;
-import com.neo.entity.UserInfo;
 import com.neo.exception.BusinessException;
-import com.neo.exception.ErrorEnum;
+import com.neo.enums.ErrorEnum;
 import com.neo.service.RoleService;
 import com.neo.service.UserInfoService;
-import com.neo.util.Msg;
 import com.neo.util.PageableUtil;
 import com.neo.util.StringUtils;
 import org.springframework.data.domain.*;
