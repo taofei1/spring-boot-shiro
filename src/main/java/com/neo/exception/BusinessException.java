@@ -2,7 +2,7 @@ package com.neo.exception;
 
 import com.neo.enums.ErrorEnum;
 
-public class BusinessException  extends  Exception{
+public class BusinessException extends RuntimeException {
     private String code;
     private String message;
     public BusinessException(){

@@ -9,10 +9,7 @@ import com.neo.enums.ErrorEnum;
 import com.neo.mapper.CloudFileMapper;
 import com.neo.pojo.CloudFile;
 import com.neo.service.CloudFileService;
-import com.neo.util.DateUtils;
-import com.neo.util.MultiThreadCalcService;
-import com.neo.util.ShiroUtil;
-import com.neo.util.StringUtils;
+import com.neo.util.*;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.io.IOUtils;
@@ -33,6 +30,8 @@ import java.util.zip.ZipOutputStream;
 public class CloudFileServiceImpl implements CloudFileService {
     @Autowired
     private CloudFileMapper cloudFileMapper;
+    @Autowired
+    private MultiThreadCalcServcieByCountdownLatch multiThreadCalcServcieByCountdownLatch;
     @Override
     public CloudFile selectByFileId(Long id) {
         return cloudFileMapper.selectByFileId(id);
@@ -533,8 +532,7 @@ public class CloudFileServiceImpl implements CloudFileService {
         if (StringUtils.isEmpty(ids)) {
             throw new BusinessException(ErrorEnum.PARAM_ERROR);
         }
-        MultiThreadCalcService multiThreadCalcService = new MultiThreadCalcService();
-        return multiThreadCalcService.calc(ids);
+        return multiThreadCalcServcieByCountdownLatch.calc(ids);
     }
 
 

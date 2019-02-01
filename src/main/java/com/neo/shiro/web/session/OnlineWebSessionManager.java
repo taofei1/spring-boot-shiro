@@ -4,6 +4,7 @@ import com.neo.model.online.OnlineSession;
 import com.neo.model.online.OnlineUser;
 import com.neo.util.DateUtils;
 import com.neo.util.JacksonUtils;
+import com.neo.util.SerializeUtil;
 import com.neo.util.ShiroConstants;
 import jdk.nashorn.internal.parser.JSONParser;
 import org.apache.poi.ss.usermodel.DateUtil;
@@ -36,8 +37,8 @@ public class OnlineWebSessionManager extends DefaultWebSessionManager {
                 onlineSession = (OnlineSession) obj;
             } else {
                 try {
-                    String json = JacksonUtils.obj2json(obj);
-                    onlineSession = JacksonUtils.json2pojo(json, OnlineSession.class);
+                    byte[] bytes = SerializeUtil.serialize(obj);
+                    onlineSession = (OnlineSession) SerializeUtil.deserialize(bytes);
 
                 } catch (Exception e) {
                     e.printStackTrace();

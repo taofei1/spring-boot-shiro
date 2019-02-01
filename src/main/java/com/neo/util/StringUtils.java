@@ -1,6 +1,7 @@
 package com.neo.util;
 
 import javax.persistence.Convert;
+import java.text.DecimalFormat;
 import java.util.Collection;
 
 import java.util.Collection;
@@ -460,6 +461,36 @@ public class StringUtils extends org.apache.commons.lang3.StringUtils
         }
         return Long.valueOf(sb.toString());
 
+
+    }
+
+    /**
+     * 将字节单位向前进位，保留两位小数
+     *
+     * @param size
+     * @return
+     */
+    public static String convertSize(Long size) {
+        DecimalFormat df = new DecimalFormat("0.00");
+        double res = size;
+        String unit = "B";
+        if (res / 1024 >= 1) {
+            res = res / 1024;
+            unit = "KB";
+        }
+        if (res / 1024 >= 1) {
+            res = res / 1024;
+            unit = "MB";
+        }
+        if (res / 1024 >= 1) {
+            res = res / 1024;
+            unit = "GB";
+        }
+        if (res / 1024 >= 1) {
+            res = res / 1024;
+            unit = "TB";
+        }
+        return df.format(res) + unit;
 
     }
 }

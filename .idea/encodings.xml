@@ -42,6 +42,8 @@
     <file url="file://$PROJECT_DIR$/src/main/java/com/neo/web/TableInfoController.java" charset="GBK" />
     <file url="file://$PROJECT_DIR$/src/main/java/com/neo/web/UserInfoController.java" charset="GBK" />
     <file url="file://$PROJECT_DIR$/src/main/java/com/neo/websocket/WebSocketServer.java" charset="GBK" />
+    <file url="file://$PROJECT_DIR$/src/main/java/easypoi/Client.java" charset="GBK" />
+    <file url="file://$PROJECT_DIR$/src/main/java/easypoi/ExcelUtil.java" charset="GBK" />
     <file url="file://$PROJECT_DIR$/src/main/java/easypoi/Test.java" charset="GBK" />
     <file url="file://$PROJECT_DIR$/src/main/java/proxy/AOPHandle.java" charset="GBK" />
     <file url="file://$PROJECT_DIR$/src/main/java/proxy/AOPTest.java" charset="GBK" />

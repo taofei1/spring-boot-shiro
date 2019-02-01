@@ -1,6 +1,7 @@
 package com.neo.model.online;
 
 import com.neo.enums.OnlineStatus;
+import com.neo.pojo.BaseEntity;
 import lombok.Data;
 import lombok.ToString;
 
@@ -9,7 +10,7 @@ import java.util.Date;
 
 @Data
 @ToString
-public class OnlineUser implements Serializable {
+public class OnlineUser extends BaseEntity implements Serializable {
     private static final long serialVersionUID = 1L;
 
     /**
