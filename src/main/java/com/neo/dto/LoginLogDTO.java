@@ -13,8 +13,8 @@ public class LoginLogDTO {
     private String ip;
     @JsonFormat(timezone = "GMT+8", pattern = "yyyy-MM-dd HH:mm:ss")
     private Date loginTime;
-    private String sessionId;
-    private Integer LoginOrLogout;
+    private Integer isSuccess;
     private String msg;
     private String username;
+    private Integer signType;//1:登录 2：登出
 }
