@@ -1,10 +1,163 @@
 <!DOCTYPE html>
-<html lang="en">
+<html xmlns:th="http://www.w3.org/1999/xhtml" lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Title</title>
+    <title>在线用户</title>
+    <link rel="stylesheet" th:href="@{/layui-v2.4.5/layui/css/layui.css}" media="all">
+    <link th:href="@{/bootstrap/bootstrap.css}" rel="stylesheet">
+    <script type="text/javascript" src="https://code.jquery.com/jquery-3.3.1.js"></script>
+    <script type="text/javascript" th:src="@{/bootstrap/bootstrap.js}"></script>
 </head>
 <body>
+<table id="online" lay-filter="test"></table>
 
 </body>
+<script th:src="@{/layui-v2.4.5/layui/layui.js}"></script>
+<script th:src="@{/js/util.js}"></script>
+<script th:inline="javascript">
+    layui.use(['table', 'layer', 'laydate'], function () {
+        var type = [[${@codeTableService.findByCate("oper_type")}]];
+        var table = layui.table;
+        var laydate = layui.laydate;
+        $('.date').each(function () {
+            laydate.render({
+                elem: this //指定元素
+                , type: 'datetime'
+            });
+        })
+
+        //第一个实例
+        var tableIns = table.render({
+            elem: '#online'
+            , defaultToolbar: ['filter', 'print', 'exports']
+            , toolbar: '#toolbar'
+            , title: '在线用户信息'
+            , autoSort: false
+            , page: true
+            , request: {
+                pageName: 'pageNum' //页码的参数名称，默认：page
+                , limitName: 'pageSize' //每页数据量的参数名，默认：limit
+            }
+            , url: '/monitor/online/users' //数据接口
+            , parseData: function (res) { //res 即为原始返回的数据
+                var result = {
+                    "code": res.code, //解析接口状态
+                    "count": res.data.totalNum, //解析数据长度
+                    "data": res.data.list //解析数据列表
+                };
+                if (res.code != '00') {
+                    msg = res.data || res.message;
+                    result['msg'] = msg;
+                }
+                return result;
+            }
+            //开启分页
+            , cols: [[ //表头
+                {type: 'checkbox', fixed: 'left'},
+                {field: 'sessionId', title: '会话编号', sort: true},
+                {field: 'loginName', title: '登录名称', sort: true}
+                , {field: 'ipaddr', title: 'ip', align: 'center', sort: true}
+                , {field: 'loginLocation', title: '登录地', sort: true}
+                , {field: 'browser', title: '浏览器', sort: true}
+                , {field: 'os', title: '操作系统', sort: true}
+                , {field: 'startTimestamp', title: '登录时间', sort: true}
+                , {field: 'lastAccessTime', title: '最后访问时间', sort: true}
+                , {field: 'expireTime', title: '超时时间(分钟)', templet: '<div>{{d.expireTime/60/1000}}</div>', sort: true}
+                , {
+                    field: 'status', title: '在线状态', sort: true, templet: function (d) {
+                        if (d.status == 'ON_LINE') {
+                            return '<span class="badge badge-primary">在线</span>';
+                        } else {
+                            return '<span class="badge badge-danger">离线</span>';
+                        }
+                    }
+                }
+            ]]
+        });
+
+        table.on('toolbar(test)', function (obj) { //注：tool 是工具条事件名，test 是 table 原始容器的属性 lay-filter="对应的值"
+            var data = obj.data //获得当前行数据
+                , layEvent = obj.event; //获得 lay-event 对应的值
+            if (layEvent == 'forceOutBatch') {
+                var checkStatus = table.checkStatus('online')
+                    , data = checkStatus.data;
+
+                var ids = [];
+                if (layEvent == 'forceOutBatch') {
+                    if (data.length < 1) {
+                        layer.msg("请先选中数据！");
+                        return;
+                    }
+                    $.each(data, function (index, value) {
+                        ids.push(value.sessionId);
+                    })
+                } else {
+                    ids.push(data.sessionId);
+                }
+                var param = {'ids': ids};
+                layer.confirm('确定要强制改用户下线吗？', function () {
+                    $.post("/monitor/online/forceOut", param, function (res) {
+                        if (res.code == '00') {
+                            layer.msg("下线成功", {icon: 6, time: 1000});
+                            tableIns.reload();
+                        } else {
+                            layer.msg("下线失败:" + res.data, {icon: 5});
+                        }
+                    })
+                });
+
+            } else if (layEvent === 'refresh') {
+
+                tableIns.reload({
+                    page: {
+                        curr: 1,
+                        limit: 10
+                    }
+                });
+            }
+        });
+        //监听排序事件
+        table.on('sort(test)', function (obj) { //注：tool是工具条事件名，test是table原始容器的属性 lay-filter="对应的值"
+            console.log(obj.field); //当前排序的字段名
+            console.log(obj.type); //当前排序类型：desc（降序）、asc（升序）、null（空对象，默认排序）
+            console.log(this); //当前排序的 th 对象
+            var params = {};
+            params['sort'] = obj.field;
+            params['order'] = obj.type;
+            //尽管我们的 table 自带排序功能，但并没有请求服务端。
+            //有些时候，你可能需要根据当前排序的字段，重新向服务端发送请求，从而实现服务端排序，如：
+            tableIns.reload({
+                initSort: obj,
+                where: { //请求参数（注意：这里面的参数可任意定义，并非下面固定的格式）
+                    params: params
+                }
+            });
+        });
+        $('#search').click(function () {
+            var params = {'beginTime': $("[name='beginTime']").val(), 'endTime': $("[name='endTime']").val()};
+            tableIns.reload({
+
+                page: {
+                    curr: 1
+                },
+                where: { //请求参数（注意：这里面的参数可任意定义，并非下面固定的格式）
+                    title: $("[name='title']").val(),
+                    operType: $("[name='operType']").val(),
+                    operName: $("[name='operName']").val(),
+                    params: params
+                }
+            })
+        })
+        $('#clean').click(function () {
+            $("#searchForm input").val("");
+        })
+
+    });
+</script>
+<script type="text/html" id="toolbar">
+    <a class="layui-btn layui-btn-danger  layui-btn-sm" lay-event="forceOutBatch"><i
+            class="layui-icon layui-icon-close"></i>强退</a>
+    <a class="layui-btn layui-btn-normal  layui-btn-sm" lay-event="refresh"><i
+            class="layui-icon layui-icon-refresh"></i>刷新</a>
+</script>
 </html>

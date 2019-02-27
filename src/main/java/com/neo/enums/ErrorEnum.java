@@ -8,7 +8,8 @@ public enum ErrorEnum {
     FILE_TO_LARGE("501", "文件过大"),
     DATABASE_OPER_ERROR("301", "数据库操作异常"),
     DUPLICATE_FILENAME("502", "文件名重复！"),
-    EMPTY_FILE("501", "文件不能为空！");
+    EMPTY_FILE("501", "文件不能为空！"),
+    FORCE_OUT_CURRENT_USER_FAILED("601", "当前用户不能强退！");
     private String code;
     private String message;
 

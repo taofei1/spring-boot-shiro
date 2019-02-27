@@ -84,8 +84,8 @@ public class OnlineUserService {
             }
             Collections.sort(online, new OnlineUserComparator(field, order));
         }
-        if (pageNum < 0) {
-            pageNum = 0;
+        if (pageNum < 1) {
+            pageNum = 1;
         }
 
         int totalNums = online.size();
@@ -122,6 +122,11 @@ public class OnlineUserService {
     public void removeBySessionId(String sessionId) {
         Cache<String, OnlineUser> cache = cacheManager.getCache(ShiroConstants.SESSIONS_CACHE);
         cache.remove(sessionId);
+    }
+
+    public void saveOnline(OnlineUser onlineUser) {
+        Cache<String, OnlineUser> cache = cacheManager.getCache(ShiroConstants.SESSIONS_CACHE);
+        cache.put(onlineUser.getSessionId(), onlineUser);
     }
 
     public void forceLogout(String sessionId) {

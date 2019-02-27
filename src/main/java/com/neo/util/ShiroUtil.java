@@ -2,6 +2,7 @@ package com.neo.util;
 
 import com.neo.entity.UserInfo;
 import org.apache.shiro.SecurityUtils;
+import org.apache.shiro.session.Session;
 import org.apache.shiro.subject.PrincipalCollection;
 import org.apache.shiro.subject.SimplePrincipalCollection;
 import org.apache.shiro.subject.Subject;
@@ -33,6 +34,10 @@ public class ShiroUtil {
         PrincipalCollection newPrincipalCollection = new SimplePrincipalCollection(user, realmName);
         // 重新加载Principal
         subject.runAs(newPrincipalCollection);
+    }
+
+    public static Session getSession() {
+        return getSubjct().getSession();
     }
 
 }

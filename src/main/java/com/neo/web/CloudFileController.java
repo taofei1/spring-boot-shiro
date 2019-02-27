@@ -231,6 +231,11 @@ public class CloudFileController {
         return Response.success();
     }
 
+    /**
+     * @param ids
+     * @return
+     * @throws BusinessException
+     */
     @PostMapping("/restore")
     @ResponseBody
     public Response restoreFile(@RequestParam("ids[]") List<Long> ids) throws BusinessException {

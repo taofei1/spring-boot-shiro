@@ -20,6 +20,10 @@ public class Response {
     public static Response fail(ErrorEnum e,String message){
         return new Response(e.getCode(),message);
     }
+
+    public static Response error(String message) {
+        return new Response("500", message);
+    }
     public static Response success(Object data){
         return new Response("00",data);
     }
