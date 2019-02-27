@@ -455,11 +455,19 @@ public class StringUtils extends org.apache.commons.lang3.StringUtils
             if (chars[i] >= '0' && chars[i] <= '9') {
                 sb.append(chars[i]);
             } else {
-                return Long.valueOf(sb.toString());
+                if (sb.length() > 0) {
+                    return Long.valueOf(sb.toString());
+                } else {
+                    return null;
+                }
             }
 
         }
-        return Long.valueOf(sb.toString());
+        if (sb.length() > 0) {
+            return Long.valueOf(sb.toString());
+        } else {
+            return null;
+        }
 
 
     }
