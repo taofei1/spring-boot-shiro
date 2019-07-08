@@ -7,6 +7,7 @@ import com.neo.exception.BusinessException;
 import com.neo.enums.ErrorEnum;
 import com.neo.service.UserLoginLogService;
 import com.neo.util.PageableUtil;
+import com.neo.util.StringUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.*;
@@ -30,6 +31,10 @@ public class UserLoginLogServiceImpl implements UserLoginLogService {
                 .withMatcher("browser", ExampleMatcher.GenericPropertyMatchers.contains())
                 .withMatcher("ip", ExampleMatcher.GenericPropertyMatchers.contains());
         Example<LoginLog> ex = Example.of(loginLog, matcher);
+        if (StringUtils.isEmpty(sortName)) {
+            sortName = "login_time";
+            type = 2;
+        }
         Pageable pageable= PageableUtil.getPageable(pageNum,pageSize,sortName,type);
         Page<LoginLog> page=userLoginLogRepo.findAll(ex,pageable);
 

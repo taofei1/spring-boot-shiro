@@ -1,6 +1,7 @@
 package com.neo.aspect;
 
 import java.lang.reflect.Method;
+import java.net.InetAddress;
 import java.util.Map;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -82,8 +83,12 @@ public class LogAspect
             operLog.setStatus(OperateStatus.SUCCESS.ordinal());
             // 请求的地址
             String ip = IPUtils.getCurrentIp();
-            operLog.setOperIp(ip);
 
+            //首先就获取ip
+            InetAddress ia = InetAddress.getLocalHost();
+
+            String ipa = ia.getHostAddress();
+            operLog.setOperIp(ipa);
             operLog.setOperUrl(ServletUtils.getRequest().getRequestURI());
             if (currentUser != null)
             {
@@ -113,6 +118,13 @@ public class LogAspect
             operLog.setMethod(className + "." + methodName + "()");
             // 处理设置注解上的参数
             getControllerMethodDescription(controllerLog, operLog);
+            Object[] params = joinPoint.getArgs();
+            if (params != null && params.length > 0) {
+                ObjectMapper om = new ObjectMapper();
+                String s = om.writeValueAsString(params);
+                operLog.setOperParam(s);
+            }
+
             // 保存数据库
             ExecutorServiceHelper.execute(AsyncTaskFactory.recordOper(operLog));
         }
